@@ -453,7 +453,7 @@ select option:hover{
   <div class="chart-row cols-2">
     <div class="chart-card">
       <h3>基金数量 / 管理机构数走势</h3>
-      <div class="chart-desc">基金总只数（左轴） vs 管理机构总数（右轴）</div>
+      <div class="chart-desc">基金总只数（左轴折线） vs 管理机构总数（右轴柱，0-200锁定刻度，避免1家变化被视觉放大）</div>
       <div id="mkt_chartCount" class="chart-box"></div>
     </div>
     <div class="chart-card">
@@ -738,20 +738,27 @@ function mktRenderKpi(data, period){
   const idx=data.findIndex(d=>d.月份===period);
   const cur=data[idx];
   const prev=idx>0?data[idx-1]:null;
-  const yoy=idx>=12?data[idx-12]:null;
   
   const totalChg=prev?(cur.总净值_万亿-prev.总净值_万亿):null;
   const totalPct=prev?(totalChg/prev.总净值_万亿*100).toFixed(2):null;
-  const yoyPct=yoy?((cur.总净值_万亿-yoy.总净值_万亿)/yoy.总净值_万亿*100).toFixed(2):null;
   const countChg=prev?(cur.全部.数量-prev.全部.数量):null;
+  
+  // 份额（亿份 → 万亿份）：用于区分规模增长来自资金申购还是净值上涨
+  const curShare=cur.全部 && cur.全部.份额_亿份 ? cur.全部.份额_亿份/10000 : null;
+  const prevShare=prev && prev.全部 && prev.全部.份额_亿份 ? prev.全部.份额_亿份/10000 : null;
+  const shareChg=(curShare!=null&&prevShare!=null)?(curShare-prevShare):null;
+  const sharePct=(shareChg!=null&&prevShare)?(shareChg/prevShare*100).toFixed(2):null;
   
   const kpis=[
     {label:`公募总净值 · ${period}`,value:mktFmt2(cur.总净值_万亿),unit:'万亿元',
      change:prev?`环比 ${totalChg>=0?'+':''}${mktFmt2(totalChg)} 万亿 (${totalPct}%)`:'首期数据',
      up:totalChg!=null?totalChg>=0:null},
-    {label:'同比增长 · 近12月',value:yoyPct||'-',unit:yoyPct?'%':'',
-     change:yoy?`vs ${yoy.月份}`:'数据不足12个月',
-     up:yoyPct!=null?Number(yoyPct)>=0:null},
+    {label:`公募总份额 · ${period}`,value:curShare!=null?mktFmt2(curShare):'-',unit:curShare!=null?'万亿份':'',
+     change:curShare==null?'数据不可用':(prev&&shareChg!=null?
+       `环比 ${shareChg>=0?'+':''}${mktFmt2(shareChg)} 万亿份 (${sharePct}%)`
+       :'首期数据'),
+     up:shareChg!=null?shareChg>=0:null,
+     hint:'份额反映投资者持有份额变化，可与净值变化对照判断规模增长来自申购扩容还是净值上涨'},
     {label:'基金总只数',value:mktFmtInt(cur.全部.数量),unit:'只',
      change:prev?`环比 ${countChg>=0?'+':''}${mktFmtInt(countChg)} 只`:'首期数据',
      up:countChg!=null?countChg>=0:null},
@@ -759,7 +766,7 @@ function mktRenderKpi(data, period){
      change:`基金公司 ${cur.基金公司数} + 资管机构 ${cur.资管机构数}`,up:null},
   ];
   document.getElementById('mkt_kpiRow').innerHTML=kpis.map(k=>`
-    <div class="kpi-card">
+    <div class="kpi-card" ${k.hint?`title="${k.hint}"`:''}>
       <div class="kpi-label">${k.label}</div>
       <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
       ${k.change?`<div class="kpi-change ${k.up===null?'':(k.up?'up':'down')}">${k.change}</div>`:''}
@@ -802,7 +809,10 @@ function mktRenderCount(data){
     tooltip:{trigger:'axis',backgroundColor:'#1e2a3a',borderColor:'#2a3d56',textStyle:{color:'#eef3f8',fontFamily:MKT_FONT_MONO},
       formatter:p=>{
         let s=`<div style="font-family:${MKT_FONT_SANS}">${p[0].axisValue}</div>`;
-        p.forEach(x=>{s+=`<div style="font-family:${MKT_FONT_MONO};margin-top:2px">${x.marker} ${x.seriesName} <strong style="color:#eef3f8;margin-left:8px">${mktFmtInt(x.value)}</strong></div>`});
+        p.forEach(x=>{
+          const unit=x.seriesName==='管理机构数'?'家':'只';
+          s+=`<div style="font-family:${MKT_FONT_MONO};margin-top:2px">${x.marker} ${x.seriesName} <strong style="color:#eef3f8;margin-left:8px">${mktFmtInt(x.value)} ${unit}</strong></div>`;
+        });
         return s;
       }},
     legend:{data:['基金数量','管理机构数'],textStyle:{color:'#a8b8cc'},top:5},
@@ -810,13 +820,14 @@ function mktRenderCount(data){
     xAxis:{type:'category',data:data.map(d=>d.月份),...mktCommonAxis},
     yAxis:[
       {type:'value',name:'基金只数',nameTextStyle:{color:'#7b8da3'},...mktCommonAxis,min:value=>Math.floor(value.min*0.98),axisLabel:{...mktCommonAxis.axisLabel,formatter:v=>mktFmtInt(v)}},
-      {type:'value',name:'机构数',nameTextStyle:{color:'#7b8da3'},...mktCommonAxis,min:value=>Math.floor(value.min-2)}
+      {type:'value',name:'机构数',nameTextStyle:{color:'#7b8da3'},...mktCommonAxis,min:0,max:200,interval:50,axisLabel:{...mktCommonAxis.axisLabel,formatter:v=>mktFmtInt(v)}}
     ],
     series:[
-      {name:'基金数量',type:'line',data:data.map(d=>d.全部?.数量),smooth:true,yAxisIndex:0,
-       lineStyle:{color:'#f5a623',width:2.5},itemStyle:{color:'#f5a623'}},
-      {name:'管理机构数',type:'line',data:data.map(d=>d.管理机构总数),smooth:true,yAxisIndex:1,
-       lineStyle:{color:'#a78bfa',width:2.5},itemStyle:{color:'#a78bfa'}}
+      {name:'管理机构数',type:'bar',data:data.map(d=>d.管理机构总数),yAxisIndex:1,
+       barWidth:'42%',z:1,itemStyle:{color:'rgba(167,139,250,0.20)',borderColor:'rgba(167,139,250,0.45)',borderWidth:1,borderRadius:[3,3,0,0]},
+       emphasis:{itemStyle:{color:'rgba(167,139,250,0.34)'}}},
+      {name:'基金数量',type:'line',data:data.map(d=>d.全部?.数量),smooth:true,yAxisIndex:0,z:3,
+       lineStyle:{color:'#f5a623',width:2.5},itemStyle:{color:'#f5a623'},symbolSize:6}
     ]
   });
 }
