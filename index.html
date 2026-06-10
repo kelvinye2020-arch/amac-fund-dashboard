@@ -484,9 +484,10 @@ select option:hover{
       <div id="mkt_dataTable"></div>
       <div class="table-note">
         <div class="row">
-          <span><strong>列顺序</strong>：股票 / 债券 / 货币 / 混合（4列新旧口径对齐）→ FOF / 其他 / QDII（口径差异列）</span>
+          <span><strong>列顺序</strong>：股票 / 债券 / 货币 / 混合（4列新旧口径对齐）→ FOF / 其他 / QDII（口径差异列）→ 封基（旧口径独有）</span>
         </div>
-        <div style="margin-top:6px"><strong>FOF（基金中基金）</strong>：2025-11 新增 · <strong>其他基金</strong>：2025-11 新增，QDII 已归入 · <strong>QDII 单列</strong>：仅旧口径披露，新口径鼠标悬浮列名查看说明</div>
+        <div style="margin-top:6px"><strong>单位</strong>：除环比保留亿元外，所有规模列统一为<strong>万亿(2位小数)</strong> · <strong>FOF</strong>：2025-11 新增 · <strong>其他</strong>：2025-11 新增（QDII 已归入） · <strong>封基</strong>：仅旧口径独立列出（约 3.7 万亿），新口径已合并到各投资类型中</div>
+        <div style="margin-top:6px"><strong>加法关系</strong>：旧口径 股+债+货+混+QDII+封基 = 总净值 ✓ · 新口径 股+债+货+混+FOF+其他 = 总净值 ✓</div>
         <div style="margin-top:6px"><strong>新旧对比</strong>：股票/债券/货币/混合 4 类新旧口径定义基本一致可纵向参考，但严格意义不可直接环比（旧口径仅含开放式）</div>
       </div>
     </div>
@@ -928,9 +929,10 @@ function mktRenderTable(data){
     '<th>债券(万亿)</th>'+
     '<th>货币(万亿)</th>'+
     '<th>混合(万亿)</th>'+
-    '<th>FOF(亿元)</th>'+
-    '<th>其他(亿元)</th>'+
-    '<th>QDII(亿元)</th>'+
+    '<th>FOF(万亿)</th>'+
+    '<th>其他(万亿)</th>'+
+    '<th>QDII(万亿)</th>'+
+    '<th title="封闭式基金：旧口径下独立列出，新口径已合并到各分类">封基(万亿)</th>'+
     '</tr></thead><tbody>';
   desc.forEach((d,i)=>{
     const prev=desc[i+1];
@@ -941,14 +943,19 @@ function mktRenderTable(data){
     const fof=isNew?d.基金中基金:null;
     const other=isNew?d.其他基金:null;
     const qdii=d.QDII基金;
+    const closed=d.封闭式基金;
     
-    // FOF / 其他列：新口径给数值，旧口径 —
-    const fofCell=isNew?mktFmtInt(fof?.净值_亿元):'<span class="na">—</span>';
-    const otherCell=isNew?mktFmtInt(other?.净值_亿元):'<span class="na">—</span>';
-    // QDII列：旧口径给数值，新口径用 — 并 tooltip 提示（已归入其他）
+    // FOF / 其他列：新口径给数值（万亿2位小数），旧口径 —
+    const fofCell=isNew?mktFmt2(fof?.净值_亿元/10000):'<span class="na">—</span>';
+    const otherCell=isNew?mktFmt2(other?.净值_亿元/10000):'<span class="na">—</span>';
+    // QDII列：旧口径给数值（万亿2位小数），新口径用 — 并 tooltip 提示（已归入其他）
     const qdiiCell=isNew
       ?'<span class="na" title="2025-11起QDII已归入其他基金，不再单独披露">—</span>'
-      :mktFmtInt(qdii?.净值_亿元);
+      :mktFmt2(qdii?.净值_亿元/10000);
+    // 封基列：仅旧口径披露
+    const closedCell=isNew
+      ?'<span class="na" title="2025-11起封闭式基金已合并到各投资类型分类中，不再独立披露">—</span>'
+      :mktFmt2(closed?.净值_亿元/10000);
     
     html+=`<tr>
       <td>${d.月份}<span class="${isNew?'badge-new':'badge-old'}">${isNew?'新':'旧'}</span></td>
@@ -963,6 +970,7 @@ function mktRenderTable(data){
       <td>${fofCell}</td>
       <td>${otherCell}</td>
       <td>${qdiiCell}</td>
+      <td>${closedCell}</td>
     </tr>`;
   });
   html+='</tbody></table>';
