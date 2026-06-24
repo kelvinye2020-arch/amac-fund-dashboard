@@ -1,0 +1,970 @@
+{
+  "2025H2": [
+    {
+      "rank": 1,
+      "name": "蚂蚁（杭州）基金销售有限公司",
+      "equity": 10283,
+      "nonmoney": 17061,
+      "index": 4681,
+      "category": "独立销售"
+    },
+    {
+      "rank": 2,
+      "name": "招商银行股份有限公司",
+      "equity": 5888,
+      "nonmoney": 12746,
+      "index": 898,
+      "category": "银行"
+    },
+    {
+      "rank": 3,
+      "name": "上海天天基金销售有限公司",
+      "equity": 4154,
+      "nonmoney": 6876,
+      "index": 1148,
+      "category": "独立销售"
+    },
+    {
+      "rank": 4,
+      "name": "中国工商银行股份有限公司",
+      "equity": 3580,
+      "nonmoney": 4870,
+      "index": 451,
+      "category": "银行"
+    },
+    {
+      "rank": 5,
+      "name": "中国建设银行股份有限公司",
+      "equity": 2582,
+      "nonmoney": 3832,
+      "index": 673,
+      "category": "银行"
+    },
+    {
+      "rank": 6,
+      "name": "中国银行股份有限公司",
+      "equity": 2106,
+      "nonmoney": 4124,
+      "index": 316,
+      "category": "银行"
+    },
+    {
+      "rank": 7,
+      "name": "交通银行股份有限公司",
+      "equity": 1838,
+      "nonmoney": 1916,
+      "index": 253,
+      "category": "银行"
+    },
+    {
+      "rank": 8,
+      "name": "中信证券股份有限公司",
+      "equity": 1673,
+      "nonmoney": 3022,
+      "index": 1378,
+      "category": "券商"
+    },
+    {
+      "rank": 9,
+      "name": "中国人寿保险股份有限公司",
+      "equity": 1673,
+      "nonmoney": 2006,
+      "index": 94,
+      "category": "保险"
+    },
+    {
+      "rank": 10,
+      "name": "华泰证券股份有限公司",
+      "equity": 1496,
+      "nonmoney": 2164,
+      "index": 1368,
+      "category": "券商"
+    },
+    {
+      "rank": 11,
+      "name": "中国农业银行股份有限公司",
+      "equity": 1332,
+      "nonmoney": 2030,
+      "index": 210,
+      "category": "银行"
+    },
+    {
+      "rank": 12,
+      "name": "国泰海通证券股份有限公司",
+      "equity": 1297,
+      "nonmoney": 1977,
+      "index": 1187,
+      "category": "券商"
+    },
+    {
+      "rank": 13,
+      "name": "腾安基金销售（深圳）有限公司",
+      "equity": 1152,
+      "nonmoney": 3987,
+      "index": 482,
+      "category": "独立销售"
+    },
+    {
+      "rank": 14,
+      "name": "招商证券股份有限公司",
+      "equity": 973,
+      "nonmoney": 1472,
+      "index": 664,
+      "category": "券商"
+    },
+    {
+      "rank": 15,
+      "name": "中国邮政储蓄银行股份有限公司",
+      "equity": 887,
+      "nonmoney": 2023,
+      "index": 230,
+      "category": "银行"
+    },
+    {
+      "rank": 16,
+      "name": "广发证券股份有限公司",
+      "equity": 886,
+      "nonmoney": 1652,
+      "index": 565,
+      "category": "券商"
+    },
+    {
+      "rank": 17,
+      "name": "中国银河证券股份有限公司",
+      "equity": 842,
+      "nonmoney": 938,
+      "index": 667,
+      "category": "券商"
+    },
+    {
+      "rank": 18,
+      "name": "国信证券股份有限公司",
+      "equity": 728,
+      "nonmoney": 1307,
+      "index": 526,
+      "category": "券商"
+    },
+    {
+      "rank": 19,
+      "name": "平安银行股份有限公司",
+      "equity": 722,
+      "nonmoney": 1393,
+      "index": 182,
+      "category": "银行"
+    },
+    {
+      "rank": 20,
+      "name": "兴业银行股份有限公司",
+      "equity": 707,
+      "nonmoney": 1291,
+      "index": 147,
+      "category": "银行"
+    },
+    {
+      "rank": 21,
+      "name": "民生银行股份有限公司",
+      "equity": 690,
+      "nonmoney": 1485,
+      "index": 192,
+      "category": "银行"
+    },
+    {
+      "rank": 22,
+      "name": "中信银行股份有限公司",
+      "equity": 624,
+      "nonmoney": 1368,
+      "index": 137,
+      "category": "银行"
+    },
+    {
+      "rank": 23,
+      "name": "中信建投证券股份有限公司",
+      "equity": 571,
+      "nonmoney": 914,
+      "index": 484,
+      "category": "券商"
+    },
+    {
+      "rank": 24,
+      "name": "浦发银行股份有限公司",
+      "equity": 535,
+      "nonmoney": 1012,
+      "index": 131,
+      "category": "银行"
+    },
+    {
+      "rank": 25,
+      "name": "光大银行股份有限公司",
+      "equity": 511,
+      "nonmoney": 988,
+      "index": 138,
+      "category": "银行"
+    },
+    {
+      "rank": 26,
+      "name": "申万宏源证券股份有限公司",
+      "equity": 483,
+      "nonmoney": 992,
+      "index": 416,
+      "category": "券商"
+    },
+    {
+      "rank": 27,
+      "name": "国金证券股份有限公司",
+      "equity": 439,
+      "nonmoney": 779,
+      "index": 391,
+      "category": "券商"
+    },
+    {
+      "rank": 28,
+      "name": "方正证券股份有限公司",
+      "equity": 416,
+      "nonmoney": 801,
+      "index": 392,
+      "category": "券商"
+    },
+    {
+      "rank": 29,
+      "name": "东方财富证券股份有限公司",
+      "equity": 410,
+      "nonmoney": 1465,
+      "index": 313,
+      "category": "券商"
+    },
+    {
+      "rank": 30,
+      "name": "基煜基金销售有限公司",
+      "equity": 400,
+      "nonmoney": 1178,
+      "index": 130,
+      "category": "独立销售"
+    }
+  ],
+  "2025H1": [
+    {
+      "rank": 1,
+      "name": "蚂蚁（杭州）基金销售有限公司",
+      "equity": 8914,
+      "nonmoney": 17348,
+      "index": 3865,
+      "category": "独立销售"
+    },
+    {
+      "rank": 2,
+      "name": "招商银行股份有限公司",
+      "equity": 5539,
+      "nonmoney": 11230,
+      "index": 678,
+      "category": "银行"
+    },
+    {
+      "rank": 3,
+      "name": "上海天天基金销售有限公司",
+      "equity": 3863,
+      "nonmoney": 6866,
+      "index": 949,
+      "category": "独立销售"
+    },
+    {
+      "rank": 4,
+      "name": "中国工商银行股份有限公司",
+      "equity": 3613,
+      "nonmoney": 4517,
+      "index": 360,
+      "category": "银行"
+    },
+    {
+      "rank": 5,
+      "name": "中国建设银行股份有限公司",
+      "equity": 2556,
+      "nonmoney": 3780,
+      "index": 503,
+      "category": "银行"
+    },
+    {
+      "rank": 6,
+      "name": "中国银行股份有限公司",
+      "equity": 1971,
+      "nonmoney": 3835,
+      "index": 239,
+      "category": "银行"
+    },
+    {
+      "rank": 7,
+      "name": "交通银行股份有限公司",
+      "equity": 1587,
+      "nonmoney": 2164,
+      "index": 199,
+      "category": "银行"
+    },
+    {
+      "rank": 8,
+      "name": "中国人寿保险股份有限公司",
+      "equity": 1528,
+      "nonmoney": 2096,
+      "index": 76,
+      "category": "保险"
+    },
+    {
+      "rank": 9,
+      "name": "中信证券股份有限公司",
+      "equity": 1422,
+      "nonmoney": 2956,
+      "index": 1080,
+      "category": "券商"
+    },
+    {
+      "rank": 10,
+      "name": "华泰证券股份有限公司",
+      "equity": 1366,
+      "nonmoney": 1988,
+      "index": 1112,
+      "category": "券商"
+    },
+    {
+      "rank": 11,
+      "name": "中国农业银行股份有限公司",
+      "equity": 1356,
+      "nonmoney": 1849,
+      "index": 151,
+      "category": "银行"
+    },
+    {
+      "rank": 12,
+      "name": "国泰海通证券股份有限公司",
+      "equity": 1104,
+      "nonmoney": 1746,
+      "index": 887,
+      "category": "券商"
+    },
+    {
+      "rank": 13,
+      "name": "招商证券股份有限公司",
+      "equity": 936,
+      "nonmoney": 1301,
+      "index": 518,
+      "category": "券商"
+    },
+    {
+      "rank": 14,
+      "name": "广发证券股份有限公司",
+      "equity": 916,
+      "nonmoney": 1765,
+      "index": 441,
+      "category": "券商"
+    },
+    {
+      "rank": 15,
+      "name": "腾安基金销售（深圳）有限公司",
+      "equity": 912,
+      "nonmoney": 3996,
+      "index": 376,
+      "category": "独立销售"
+    },
+    {
+      "rank": 16,
+      "name": "中国邮政储蓄银行股份有限公司",
+      "equity": 842,
+      "nonmoney": 1801,
+      "index": 185,
+      "category": "银行"
+    },
+    {
+      "rank": 17,
+      "name": "中国银河证券股份有限公司",
+      "equity": 828,
+      "nonmoney": 882,
+      "index": 588,
+      "category": "券商"
+    },
+    {
+      "rank": 18,
+      "name": "民生银行股份有限公司",
+      "equity": 694,
+      "nonmoney": 1410,
+      "index": 147,
+      "category": "银行"
+    },
+    {
+      "rank": 19,
+      "name": "平安银行股份有限公司",
+      "equity": 664,
+      "nonmoney": 1327,
+      "index": 137,
+      "category": "银行"
+    },
+    {
+      "rank": 20,
+      "name": "兴业银行股份有限公司",
+      "equity": 650,
+      "nonmoney": 1239,
+      "index": 112,
+      "category": "银行"
+    },
+    {
+      "rank": 21,
+      "name": "国信证券股份有限公司",
+      "equity": 632,
+      "nonmoney": 1118,
+      "index": 453,
+      "category": "券商"
+    },
+    {
+      "rank": 22,
+      "name": "中信银行股份有限公司",
+      "equity": 551,
+      "nonmoney": 1078,
+      "index": 92,
+      "category": "银行"
+    },
+    {
+      "rank": 23,
+      "name": "浦发银行股份有限公司",
+      "equity": 506,
+      "nonmoney": 1117,
+      "index": 99,
+      "category": "银行"
+    },
+    {
+      "rank": 24,
+      "name": "光大银行股份有限公司",
+      "equity": 464,
+      "nonmoney": 902,
+      "index": 99,
+      "category": "银行"
+    },
+    {
+      "rank": 25,
+      "name": "中信建投证券股份有限公司",
+      "equity": 446,
+      "nonmoney": 1006,
+      "index": 396,
+      "category": "券商"
+    },
+    {
+      "rank": 26,
+      "name": "东方财富证券股份有限公司",
+      "equity": 417,
+      "nonmoney": 1381,
+      "index": 194,
+      "category": "券商"
+    },
+    {
+      "rank": 27,
+      "name": "方正证券股份有限公司",
+      "equity": 414,
+      "nonmoney": 739,
+      "index": 297,
+      "category": "券商"
+    },
+    {
+      "rank": 28,
+      "name": "申万宏源证券股份有限公司",
+      "equity": 406,
+      "nonmoney": 794,
+      "index": 341,
+      "category": "券商"
+    },
+    {
+      "rank": 29,
+      "name": "国金证券股份有限公司",
+      "equity": 398,
+      "nonmoney": 717,
+      "index": 333,
+      "category": "券商"
+    },
+    {
+      "rank": 30,
+      "name": "基煜基金销售有限公司",
+      "equity": 361,
+      "nonmoney": 1225,
+      "index": 114,
+      "category": "独立销售"
+    }
+  ],
+  "2024H2": [
+    {
+      "rank": 1,
+      "name": "蚂蚁（杭州）基金销售有限公司",
+      "equity": 8825,
+      "nonmoney": 16884,
+      "index": 2781,
+      "category": "独立销售"
+    },
+    {
+      "rank": 2,
+      "name": "招商银行股份有限公司",
+      "equity": 4933,
+      "nonmoney": 11304,
+      "index": 475,
+      "category": "银行"
+    },
+    {
+      "rank": 3,
+      "name": "上海天天基金销售有限公司",
+      "equity": 3519,
+      "nonmoney": 6444,
+      "index": 614,
+      "category": "独立销售"
+    },
+    {
+      "rank": 4,
+      "name": "中国工商银行股份有限公司",
+      "equity": 3191,
+      "nonmoney": 4583,
+      "index": 241,
+      "category": "银行"
+    },
+    {
+      "rank": 5,
+      "name": "中国建设银行股份有限公司",
+      "equity": 2252,
+      "nonmoney": 3817,
+      "index": 361,
+      "category": "银行"
+    },
+    {
+      "rank": 6,
+      "name": "中国银行股份有限公司",
+      "equity": 1892,
+      "nonmoney": 4033,
+      "index": 157,
+      "category": "银行"
+    },
+    {
+      "rank": 7,
+      "name": "交通银行股份有限公司",
+      "equity": 1613,
+      "nonmoney": 2054,
+      "index": 142,
+      "category": "银行"
+    },
+    {
+      "rank": 8,
+      "name": "中信证券股份有限公司",
+      "equity": 1479,
+      "nonmoney": 3044,
+      "index": 759,
+      "category": "券商"
+    },
+    {
+      "rank": 9,
+      "name": "中国人寿保险股份有限公司",
+      "equity": 1309,
+      "nonmoney": 1802,
+      "index": 54,
+      "category": "保险"
+    },
+    {
+      "rank": 10,
+      "name": "华泰证券股份有限公司",
+      "equity": 1153,
+      "nonmoney": 2010,
+      "index": 741,
+      "category": "券商"
+    },
+    {
+      "rank": 11,
+      "name": "中国农业银行股份有限公司",
+      "equity": 1124,
+      "nonmoney": 1717,
+      "index": 122,
+      "category": "银行"
+    },
+    {
+      "rank": 12,
+      "name": "国泰海通证券股份有限公司",
+      "equity": 1000,
+      "nonmoney": 2014,
+      "index": 704,
+      "category": "券商"
+    },
+    {
+      "rank": 13,
+      "name": "腾安基金销售（深圳）有限公司",
+      "equity": 933,
+      "nonmoney": 3733,
+      "index": 232,
+      "category": "独立销售"
+    },
+    {
+      "rank": 14,
+      "name": "广发证券股份有限公司",
+      "equity": 798,
+      "nonmoney": 1652,
+      "index": 308,
+      "category": "券商"
+    },
+    {
+      "rank": 15,
+      "name": "招商证券股份有限公司",
+      "equity": 785,
+      "nonmoney": 1417,
+      "index": 403,
+      "category": "券商"
+    },
+    {
+      "rank": 16,
+      "name": "中国银河证券股份有限公司",
+      "equity": 784,
+      "nonmoney": 962,
+      "index": 424,
+      "category": "券商"
+    },
+    {
+      "rank": 17,
+      "name": "中国邮政储蓄银行股份有限公司",
+      "equity": 665,
+      "nonmoney": 2156,
+      "index": 116,
+      "category": "银行"
+    },
+    {
+      "rank": 18,
+      "name": "民生银行股份有限公司",
+      "equity": 582,
+      "nonmoney": 1488,
+      "index": 98,
+      "category": "银行"
+    },
+    {
+      "rank": 19,
+      "name": "中信银行股份有限公司",
+      "equity": 563,
+      "nonmoney": 1068,
+      "index": 74,
+      "category": "银行"
+    },
+    {
+      "rank": 20,
+      "name": "国信证券股份有限公司",
+      "equity": 556,
+      "nonmoney": 1055,
+      "index": 347,
+      "category": "券商"
+    },
+    {
+      "rank": 21,
+      "name": "平安银行股份有限公司",
+      "equity": 533,
+      "nonmoney": 1263,
+      "index": 99,
+      "category": "银行"
+    },
+    {
+      "rank": 22,
+      "name": "兴业银行股份有限公司",
+      "equity": 530,
+      "nonmoney": 1332,
+      "index": 85,
+      "category": "银行"
+    },
+    {
+      "rank": 23,
+      "name": "申万宏源证券股份有限公司",
+      "equity": 475,
+      "nonmoney": 734,
+      "index": 214,
+      "category": "券商"
+    },
+    {
+      "rank": 24,
+      "name": "浦发银行股份有限公司",
+      "equity": 455,
+      "nonmoney": 1029,
+      "index": 79,
+      "category": "银行"
+    },
+    {
+      "rank": 25,
+      "name": "光大银行股份有限公司",
+      "equity": 438,
+      "nonmoney": 935,
+      "index": 72,
+      "category": "银行"
+    },
+    {
+      "rank": 26,
+      "name": "方正证券股份有限公司",
+      "equity": 412,
+      "nonmoney": 697,
+      "index": 177,
+      "category": "券商"
+    },
+    {
+      "rank": 27,
+      "name": "中信建投证券股份有限公司",
+      "equity": 394,
+      "nonmoney": 873,
+      "index": 288,
+      "category": "券商"
+    },
+    {
+      "rank": 28,
+      "name": "东方财富证券股份有限公司",
+      "equity": 388,
+      "nonmoney": 1528,
+      "index": 156,
+      "category": "券商"
+    },
+    {
+      "rank": 29,
+      "name": "基煜基金销售有限公司",
+      "equity": 381,
+      "nonmoney": 1258,
+      "index": 70,
+      "category": "独立销售"
+    },
+    {
+      "rank": 30,
+      "name": "国金证券股份有限公司",
+      "equity": 373,
+      "nonmoney": 851,
+      "index": 232,
+      "category": "券商"
+    }
+  ],
+  "2024H1": [
+    {
+      "rank": 1,
+      "name": "蚂蚁（杭州）基金销售有限公司",
+      "equity": 8385,
+      "nonmoney": 15494,
+      "index": null,
+      "category": "独立销售"
+    },
+    {
+      "rank": 2,
+      "name": "招商银行股份有限公司",
+      "equity": 4947,
+      "nonmoney": 11460,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 3,
+      "name": "上海天天基金销售有限公司",
+      "equity": 3056,
+      "nonmoney": 6070,
+      "index": null,
+      "category": "独立销售"
+    },
+    {
+      "rank": 4,
+      "name": "中国工商银行股份有限公司",
+      "equity": 2889,
+      "nonmoney": 4448,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 5,
+      "name": "中国建设银行股份有限公司",
+      "equity": 2125,
+      "nonmoney": 3527,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 6,
+      "name": "中国银行股份有限公司",
+      "equity": 1737,
+      "nonmoney": 3617,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 7,
+      "name": "交通银行股份有限公司",
+      "equity": 1425,
+      "nonmoney": 1772,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 8,
+      "name": "中国人寿保险股份有限公司",
+      "equity": 1313,
+      "nonmoney": 1684,
+      "index": null,
+      "category": "保险"
+    },
+    {
+      "rank": 9,
+      "name": "中信证券股份有限公司",
+      "equity": 1289,
+      "nonmoney": 2940,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 10,
+      "name": "中国农业银行股份有限公司",
+      "equity": 1134,
+      "nonmoney": 1611,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 11,
+      "name": "华泰证券股份有限公司",
+      "equity": 1031,
+      "nonmoney": 1918,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 12,
+      "name": "国泰海通证券股份有限公司",
+      "equity": 979,
+      "nonmoney": 1702,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 13,
+      "name": "腾安基金销售（深圳）有限公司",
+      "equity": 907,
+      "nonmoney": 3466,
+      "index": null,
+      "category": "独立销售"
+    },
+    {
+      "rank": 14,
+      "name": "中国银河证券股份有限公司",
+      "equity": 798,
+      "nonmoney": 930,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 15,
+      "name": "招商证券股份有限公司",
+      "equity": 758,
+      "nonmoney": 1137,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 16,
+      "name": "中国邮政储蓄银行股份有限公司",
+      "equity": 745,
+      "nonmoney": 1883,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 17,
+      "name": "广发证券股份有限公司",
+      "equity": 687,
+      "nonmoney": 1617,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 18,
+      "name": "兴业银行股份有限公司",
+      "equity": 574,
+      "nonmoney": 1359,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 19,
+      "name": "平安银行股份有限公司",
+      "equity": 565,
+      "nonmoney": 1095,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 20,
+      "name": "民生银行股份有限公司",
+      "equity": 542,
+      "nonmoney": 1256,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 21,
+      "name": "国信证券股份有限公司",
+      "equity": 533,
+      "nonmoney": 1233,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 22,
+      "name": "浦发银行股份有限公司",
+      "equity": 493,
+      "nonmoney": 1111,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 23,
+      "name": "中信银行股份有限公司",
+      "equity": 446,
+      "nonmoney": 993,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 24,
+      "name": "申万宏源证券股份有限公司",
+      "equity": 434,
+      "nonmoney": 885,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 25,
+      "name": "光大银行股份有限公司",
+      "equity": 424,
+      "nonmoney": 967,
+      "index": null,
+      "category": "银行"
+    },
+    {
+      "rank": 26,
+      "name": "国金证券股份有限公司",
+      "equity": 404,
+      "nonmoney": 804,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 27,
+      "name": "中信建投证券股份有限公司",
+      "equity": 380,
+      "nonmoney": 937,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 28,
+      "name": "基煜基金销售有限公司",
+      "equity": 344,
+      "nonmoney": 1266,
+      "index": null,
+      "category": "独立销售"
+    },
+    {
+      "rank": 29,
+      "name": "东方财富证券股份有限公司",
+      "equity": 321,
+      "nonmoney": 1542,
+      "index": null,
+      "category": "券商"
+    },
+    {
+      "rank": 30,
+      "name": "方正证券股份有限公司",
+      "equity": 311,
+      "nonmoney": 732,
+      "index": null,
+      "category": "券商"
+    }
+  ]
+}

@@ -600,8 +600,10 @@ function mktRerenderAll(){
 }
 
 function mktRenderHeader(data){
-  document.getElementById('mkt_dateRange').textContent=data[0].月份+' ~ '+data[data.length-1].月份;
-  document.getElementById('mkt_recordCount').textContent=data.length;
+  const dr=document.getElementById('mkt_dateRange');
+  const rc=document.getElementById('mkt_recordCount');
+  if(dr) dr.textContent=data[0].月份+' ~ '+data[data.length-1].月份;
+  if(rc) rc.textContent=data.length;
 }
 
 function mktRenderPeriodSelector(data){
