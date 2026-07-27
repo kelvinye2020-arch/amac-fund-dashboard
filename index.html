@@ -936,9 +936,9 @@ function mktRenderPeriodSelector(data){
 }
 
 function mktRenderWindowTabs(){
-  document.querySelectorAll('#windowTabs button').forEach(btn=>{
+  document.querySelectorAll('#mkt_windowTabs button').forEach(btn=>{
     btn.addEventListener('click',()=>{
-      document.querySelectorAll('#windowTabs button').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('#mkt_windowTabs button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       const w=btn.dataset.window;
       MKT_WINDOW=w==='all'?'all':parseInt(w);
