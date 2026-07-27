@@ -147,6 +147,20 @@ var Fr={},Gr={};var Wr,Hr=function(){function t(t,e,n){var i=this;this._sleepAft
   th:first-child,td:first-child{text-align:left}
   td{font-family:var(--mono);color:var(--text-secondary)}
   td:first-child{font-family:var(--sans);color:var(--text-primary);font-weight:500}
+
+  /* 环比细分比较表（蓝头 + 交替行 + 子行缩进） */
+  .mkt-compare table{font-size:12.5px;min-width:900px;border-collapse:separate;border-spacing:0}
+  .mkt-compare thead .grp{background:linear-gradient(180deg,#1a4a6e,#0f3654);color:#cfe3f5;font-weight:600;padding:8px 6px;text-align:center;border-bottom:1px solid #2a6090}
+  .mkt-compare thead .sub{background:#15314a;color:#9bb6cc;font-weight:500;padding:7px 6px;text-align:right;font-size:11.5px;letter-spacing:0.3px}
+  .mkt-compare thead .sub:first-child{background:#15314a;text-align:center}
+  .mkt-compare tbody td{padding:9px 8px;border-bottom:1px solid rgba(28,42,61,0.5)}
+  .mkt-compare tbody tr:nth-child(even) td{background:rgba(74,144,244,0.04)}
+  .mkt-compare tbody tr:hover td{background:rgba(74,144,244,0.08)}
+  .mkt-compare tbody td.sub-row{padding-left:28px;color:var(--text-muted);font-style:italic}
+  .mkt-compare tbody td.sub-row+td,
+  .mkt-compare tbody td.sub-row~td{color:var(--text-muted);font-style:italic}
+  .mkt-compare tbody tr.total td{font-weight:700;color:var(--text-primary);background:rgba(167,139,250,0.08);border-top:2px solid var(--c-purple)}
+  .mkt-compare tbody tr.total td:first-child{color:var(--c-purple)}
   tr:hover td{background:rgba(255,255,255,0.02)}
   td.dim{color:var(--text-muted)}
   td.na{color:#4a5568;font-style:italic}
@@ -469,6 +483,13 @@ select option:hover{
   
   <!-- KPI 摘要（响应报告期切换） -->
   <div class="kpi-row" id="mkt_kpiRow"></div>
+
+  <!-- 环比细分比较（当月 vs 上月，按基金分类） -->
+  <div class="chart-card mkt-compare" style="margin-bottom:24px">
+    <h3>环比细分比较 <span class="badge-tag" id="mkt_comparePeriod">—</span></h3>
+    <div class="chart-desc">当月与上月按基金分类的数量/份额/净值对比（取整）</div>
+    <div id="mkt_compareTable" style="overflow-x:auto"></div>
+  </div>
   
   <!-- 口径说明（独立模块） -->
   <div class="caliber-card">
@@ -910,6 +931,7 @@ function mktGetWindowData(){
 function mktRerenderAll(){
   const sub=mktGetWindowData();
   mktRenderKpi(MKT_DATA, MKT_PERIOD);
+  mktRenderMonthCompare(MKT_DATA, MKT_PERIOD);
   mktRenderTotal(sub);
   mktRenderCount(sub);
   mktRenderChange(sub);
@@ -989,6 +1011,67 @@ function mktRenderKpi(data, period){
       <div class="kpi-value">${k.value}<span class="kpi-unit">${k.unit}</span></div>
       ${k.change?`<div class="kpi-change ${k.up===null?'':(k.up?'up':'down')}">${k.change}</div>`:''}
     </div>`).join('');
+}
+
+function mktRenderMonthCompare(data, period){
+  const idx=data.findIndex(d=>d.月份===period);
+  const cur=data[idx];
+  const prev=idx>0?data[idx-1]:null;
+  document.getElementById('mkt_comparePeriod').textContent = cur.月份;
+  if(!prev){
+    document.getElementById('mkt_compareTable').innerHTML='<div style="padding:20px;text-align:center;color:var(--text-muted)">无上期数据可比</div>';
+    return;
+  }
+  const fmtInt = n => n==null?'—':Math.round(n).toLocaleString('en-US');
+  // 行定义（顺序+是否为子行）
+  const rows=[
+    {name:'股票基金', key:'股票基金', sub:false},
+    {name:'债券基金', key:'债券基金', sub:false},
+    {name:'货币市场基金', key:'货币市场基金', sub:false},
+    {name:'混合基金', key:'混合基金', sub:false},
+    {name:'基金中基金', key:'基金中基金', sub:false},
+    {name:'其他基金', key:'其他基金', sub:false},
+    {name:'其中：QDII 基金', key:'QDII基金', sub:true},
+    {name:'全部', key:'全部', sub:false, total:true},
+  ];
+  function fmtDate(p){
+    const [y,m]=p.split('-');
+    return `${y}/${parseInt(m)}/${m==='06'?'30':'31'}`;  // 简化：上半月31/下半月30
+  }
+  const dateCur = fmtDate(cur.月份);
+  const datePrev = fmtDate(prev.月份);
+  // 解析日期为正确月末日（6月30、5月31）
+  function monthEnd(p){
+    const [y,m]=p.split('-').map(Number);
+    return new Date(y, m, 0).getDate();  // m+1=下月第0天=本月最后一天
+  }
+  const dCur=`${cur.月份.split('-')[0]}/${cur.月份.split('-')[1]}/${monthEnd(cur.月份)}`;
+  const dPrev=`${prev.月份.split('-')[0]}/${prev.月份.split('-')[1]}/${monthEnd(prev.月份)}`;
+
+  let html='<table><thead>';
+  html+='<tr><th class="grp" rowspan="2" style="text-align:center">类别</th>';
+  html+=`<th class="grp" colspan="3" style="text-align:center">${dCur}</th>`;
+  html+=`<th class="grp" colspan="3" style="text-align:center">${dPrev}</th></tr>`;
+  html+='<tr>';
+  ['基金数量（只）','份额（亿份）','净值（亿元）','基金数量（只）','份额（亿份）','净值（亿元）']
+    .forEach(h=>html+=`<th class="sub">${h}</th>`);
+  html+='</tr></thead><tbody>';
+
+  rows.forEach(r=>{
+    const c=cur[r.key], p=prev[r.key];
+    if(!c || !p){
+      // 子行（如 QDII）若当期或上期不存在（如旧口径）则跳过
+      return;
+    }
+    const cls=r.sub?'sub-row':'';
+    html+=`<tr ${r.total?'class="total"':''}>`;
+    html+=`<td class="${cls}" style="text-align:left">${r.name}</td>`;
+    html+=`<td>${fmtInt(c.数量)}</td><td>${fmtInt(c.份额_亿份)}</td><td>${fmtInt(c.净值_亿元)}</td>`;
+    html+=`<td>${fmtInt(p.数量)}</td><td>${fmtInt(p.份额_亿份)}</td><td>${fmtInt(p.净值_亿元)}</td>`;
+    html+='</tr>';
+  });
+  html+='</tbody></table>';
+  document.getElementById('mkt_compareTable').innerHTML=html;
 }
 
 const mktCommonGrid={left:60,right:30,top:40,bottom:50};
