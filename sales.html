@@ -398,8 +398,11 @@ select option:hover{
   .app-nav-inner{flex-wrap:wrap;gap:10px}
 }
 
-  /* 页面拆分：销售榜内容在本页隐藏 */
-  #tabSales { display: none !important; }
+  /* 页面拆分：市场总览内容在本页隐藏 */
+  #tabMarket { display: none !important; }
+  /* 销售榜页：隐藏市场总览的报告期select，显示销售榜自己的半年期select */
+  .app-period-global { display: none !important; }
+  #appSlsPeriod { display: flex !important; }
 </style>
 </head>
 <body>
@@ -421,8 +424,8 @@ select option:hover{
 <nav class="app-nav">
   <div class="app-nav-inner">
     <div class="app-tabs" id="appTabs">
-      <button class="active" data-tab="market"><span class="ico">📈</span><span>公募市场总览</span></button>
-      <button data-tab="sales" onclick="window.location.href='sales.html'"><span class="ico">🏆</span><span>公募销售机构榜</span></button>
+      <button data-tab="market" onclick="window.location.href='index.html'"><span class="ico">📈</span><span>公募市场总览</span></button>
+      <button data-tab="sales" class="active"><span class="ico">🏆</span><span>公募销售机构榜</span></button>
     </div>
     <div style="flex:1"></div>
     <!-- 销售榜专属：手动切换半年期（仅销售榜活跃时显示）-->
