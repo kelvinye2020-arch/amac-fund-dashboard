@@ -1063,10 +1063,14 @@ function mktRenderMonthCompare(data, period){
       // 子行（如 QDII）若当期或上期不存在（如旧口径）则跳过
       return;
     }
-    const cls=r.sub?'sub-row':'';
+    // 环比颜色：up 红涨 / down 绿跌（A股惯例）
+    const cmp = (a,b) => a>b?'up':(a<b?'down':'');
+    const color = v => v==='up'?'color:var(--up)':(v==='down'?'color:var(--down)':'');
     html+=`<tr ${r.total?'class="total"':''}>`;
-    html+=`<td class="${cls}" style="text-align:left">${r.name}</td>`;
-    html+=`<td>${fmtInt(c.数量)}</td><td>${fmtInt(c.份额_亿份)}</td><td>${fmtInt(c.净值_亿元)}</td>`;
+    html+=`<td class="${r.sub?'sub-row':''}" style="text-align:left">${r.name}</td>`;
+    html+=`<td style="${color(cmp(c.数量, p.数量))}">${fmtInt(c.数量)}</td>`;
+    html+=`<td style="${color(cmp(c.份额_亿份, p.份额_亿份))}">${fmtInt(c.份额_亿份)}</td>`;
+    html+=`<td style="${color(cmp(c.净值_亿元, p.净值_亿元))}">${fmtInt(c.净值_亿元)}</td>`;
     html+=`<td>${fmtInt(p.数量)}</td><td>${fmtInt(p.份额_亿份)}</td><td>${fmtInt(p.净值_亿元)}</td>`;
     html+='</tr>';
   });
