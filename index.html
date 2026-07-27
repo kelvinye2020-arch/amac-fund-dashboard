@@ -397,9 +397,9 @@ select option:hover{
   .app-nav{padding:8px 16px}
   .app-nav-inner{flex-wrap:wrap;gap:10px}
 }
-
-  /* 页面拆分：销售榜内容在本页隐藏 */
-  #tabSales { display: none !important; }
+/* 初始状态：只显示市场总览，隐藏销售榜和私募基金 */
+#tabSales { display: none; }
+#tabSmjj { display: none; }
 </style>
 </head>
 <body>
@@ -422,7 +422,9 @@ select option:hover{
   <div class="app-nav-inner">
     <div class="app-tabs" id="appTabs">
       <button class="active" data-tab="market"><span class="ico">📈</span><span>公募市场总览</span></button>
-      <button data-tab="sales" onclick="window.location.href='sales.html'"><span class="ico">🏆</span><span>公募销售机构榜</span></button>
+      <button data-tab="sales"><span class="ico">🏆</span><span>公募销售机构榜</span></button>
+      <button data-tab="smjj"><span class="ico">🏛️</span><span>私募基金总览</span></button>
+      <button data-tab="smzg"><span class="ico">🏦</span><span>私募资管总览</span></button>
     </div>
     <div style="flex:1"></div>
     <!-- 销售榜专属：手动切换半年期（仅销售榜活跃时显示）-->
@@ -430,9 +432,17 @@ select option:hover{
       <span class="label">销售榜</span>
       <select id="sls_periodSelectTop"></select>
     </div>
-    <div class="app-period-global">
+    <div class="app-period-global" id="appMktPeriod" style="display:none">
       <span class="label">报告期</span>
       <select id="globalPeriodSelect"></select>
+    </div>
+    <div class="app-period-global" id="appSmjPeriod" style="display:none">
+      <span class="label">报告期</span>
+      <select id="smj_periodSelect"></select>
+    </div>
+    <div class="app-period-global" id="appSmzgPeriod" style="display:none">
+      <span class="label">报告期</span>
+      <select id="smzg_periodSelect"></select>
     </div>
   </div>
 </nav>
@@ -548,6 +558,163 @@ select option:hover{
 </div>
 
 <!-- 销售机构榜 -->
+
+<!-- 私募基金 -->
+<div class="tab-content" id="tabSmjj">
+  <div class="container">
+  <!-- 模块标题 -->
+  <div class="module-banner">
+    <div class="ico-wrap">🏛️</div>
+    <div>
+      <div class="text-zh">私募基金存续总览</div>
+      <div class="text-en">Private Fund Survival Overview</div>
+    </div>
+    <div class="meta">管理人 · 产品数量 · 管理规模 · 三大投资类型 · 地域分布<br><span id="smj_periodMeta">—</span></div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row" id="smj_kpiRow"></div>
+
+  <!-- 走势 -->
+  <div class="chart-row cols-1">
+    <div class="chart-card">
+      <h3>私募基金管理规模走势</h3>
+      <div class="chart-desc">单位：万亿元 · 存续基金规模（季度末净资产口径）</div>
+      <div id="smj_chartAum" class="chart-box"></div>
+    </div>
+  </div>
+
+  <div class="chart-row cols-2">
+    <div class="chart-card">
+      <h3>管理人数量 / 基金数量走势</h3>
+      <div class="chart-desc">存续管理人（右轴柱） vs 存续基金只数（左轴折线）</div>
+      <div id="smj_chartCount" class="chart-box"></div>
+    </div>
+    <div class="chart-card">
+      <h3>三大投资类型规模走势</h3>
+      <div class="chart-desc">单位：万亿元 · 私募证券 / 私募股权 / 创业投资</div>
+      <div id="smj_chartTypeStack" class="chart-box"></div>
+    </div>
+  </div>
+
+  <!-- 当期结构 -->
+  <div class="chart-row cols-2">
+    <div class="chart-card">
+      <h3>当期规模结构占比 <span class="badge-tag" id="smj_pieMonthLabel">最新月份</span></h3>
+      <div class="chart-desc">三大投资类型存续规模占比</div>
+      <div id="smj_chartTypePie" class="chart-box tall"></div>
+    </div>
+    <div class="chart-card">
+      <h3>管理人类型分布 <span class="badge-tag" id="smj_mgrMonthLabel">最新月份</span></h3>
+      <div class="chart-desc">私募证券 / 私募股权创投 / 资产配置 / 其他 管理人数量（家）</div>
+      <div id="smj_chartMgrPie" class="chart-box tall"></div>
+    </div>
+  </div>
+
+  <!-- 地域分布 -->
+  <div class="chart-row cols-1">
+    <div class="chart-card">
+      <h3>地域分布 TOP15 <span class="badge-tag" id="smj_regionMonthLabel">最新月份</span></h3>
+      <div class="chart-desc">按管理基金规模排序 · 单位：亿元</div>
+      <div id="smj_chartRegion" class="chart-box tall"></div>
+    </div>
+  </div>
+
+  <!-- 地域明细表 -->
+  <div class="chart-row cols-1">
+    <div class="table-card">
+      <h3>各辖区私募基金管理人分布明细 <span class="badge-tag" id="smj_tableMonthLabel">最新月份</span></h3>
+      <div id="smj_regionTable" style="max-height:520px;overflow:auto"></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">
+        单位：管理人/基金为"家/只"，规模为"亿元" · 按管理基金规模降序 · 数据来自月报表1"存续私募基金管理人按注册地分布情况"
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    数据来源：中国证券投资基金业协会（AMAC）· 私募基金管理人登记及产品备案月报 · 本看板数据截至 <span id="smj_footerPeriod">—</span>
+  </div>
+  </div>
+</div>
+
+<!-- 私募资管总览 -->
+<div class="tab-content" id="tabSmzg" style="display:none">
+  <div class="container">
+  <!-- 模块标题 -->
+  <div class="module-banner">
+    <div class="ico-wrap">🏦</div>
+    <div>
+      <div class="text-zh">证券期货经营机构私募资管产品总览</div>
+      <div class="text-en">Private Asset Management Products Overview</div>
+    </div>
+    <div class="meta">存续规模 · 产品数量 · 机构类型 · 投资类型 · 月度备案<br><span id="smzg_periodMeta">—</span></div>
+  </div>
+
+  <!-- KPI -->
+  <div class="kpi-row" id="smzg_kpiRow"></div>
+
+  <!-- 走势 -->
+  <div class="chart-row cols-1">
+    <div class="chart-card">
+      <h3>私募资管存续规模走势</h3>
+      <div class="chart-desc">单位：万亿元 · 存续产品资产净值（月末口径）</div>
+      <div id="smzg_chartAum" class="chart-box"></div>
+    </div>
+  </div>
+
+  <div class="chart-row cols-2">
+    <div class="chart-card">
+      <h3>月度备案数量 / 设立规模走势</h3>
+      <div class="chart-desc">当月新备案产品数量（左轴柱） vs 设立规模（右轴折线）</div>
+      <div id="smzg_chartNew" class="chart-box"></div>
+    </div>
+    <div class="chart-card">
+      <h3>存续投资类型规模走势</h3>
+      <div class="chart-desc">单位：亿元 · 权益 / 固定收益 / 期货衍生品 / 混合（堆叠）</div>
+      <div id="smzg_chartInvStack" class="chart-box"></div>
+    </div>
+  </div>
+
+  <!-- 当期结构 -->
+  <div class="chart-row cols-2">
+    <div class="chart-card">
+      <h3>存续投资类型规模占比 <span class="badge-tag" id="smzg_invPieLabel">最新月份</span></h3>
+      <div class="chart-desc">权益 / 固定收益 / 期货衍生品 / 混合 存续规模占比</div>
+      <div id="smzg_chartInvPie" class="chart-box tall"></div>
+    </div>
+    <div class="chart-card">
+      <h3>存续产品类型规模占比 <span class="badge-tag" id="smzg_prodPieLabel">最新月份</span></h3>
+      <div class="chart-desc">集合资产管理计划 / 单一资产管理计划 存续规模占比</div>
+      <div id="smzg_chartProdPie" class="chart-box tall"></div>
+    </div>
+  </div>
+
+  <!-- 机构类型月度备案 -->
+  <div class="chart-row cols-1">
+    <div class="chart-card">
+      <h3>月度备案按机构类型分布 <span class="badge-tag" id="smzg_instLabel">最新月份</span></h3>
+      <div class="chart-desc">当月新备案产品：设立规模（亿元，柱） + 备案数量（只，线）· 按机构类型</div>
+      <div id="smzg_chartInst" class="chart-box tall"></div>
+    </div>
+  </div>
+
+  <!-- 存续投资类型明细表 -->
+  <div class="chart-row cols-1">
+    <div class="table-card">
+      <h3>存续私募资管产品结构明细 <span class="badge-tag" id="smzg_tableLabel">最新月份</span></h3>
+      <div id="smzg_detailTable" style="overflow:auto"></div>
+      <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">
+        单位：数量为"只"，规模为"亿元" · 数据来自月报表4/表5"按产品类型/投资类型分私募资管产品存续情况"
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    数据来源：中国证券投资基金业协会（AMAC）· 证券期货经营机构私募资管产品备案月报 · 本看板数据截至 <span id="smzg_footerPeriod">—</span>
+  </div>
+  </div>
+</div>
+
 <div class="tab-content" id="tabSales">
   <div class="container">
     <div class="module-banner sales" id="anchorSales">
@@ -1629,69 +1796,55 @@ function mapMonthToHalf(month){
   return `${y-1}Q${4+q}`; // q=-1 -> Q3
 }
 
-function updateSlsTopVisibility(tab){
-  const el = document.getElementById('appSlsPeriod');
-  if(el) el.style.display = (tab==='sales') ? 'flex' : 'none';
+function updateTopPeriodVisibility(tab){
+  // 销售榜：仅 sales 显示
+  const sls = document.getElementById('appSlsPeriod');
+  if(sls) sls.style.display = (tab==='sales') ? 'flex' : 'none';
+  // 公募市场总览报告期：仅 market 显示
+  const mkt = document.getElementById('appMktPeriod');
+  if(mkt) mkt.style.display = (tab==='market') ? 'flex' : 'none';
+  // 私募基金报告期：仅 smjj 显示
+  const smj = document.getElementById('appSmjPeriod');
+  if(smj) smj.style.display = (tab==='smjj') ? 'flex' : 'none';
+  // 私募资管报告期：仅 smzg 显示
+  const smzg = document.getElementById('appSmzgPeriod');
+  if(smzg) smzg.style.display = (tab==='smzg') ? 'flex' : 'none';
 }
 
 function initAppShell(){
-  // 页面拆分模式：Tab 已改为页面跳转，只保留报告期切换功能
-  const _gs = document.getElementById('globalPeriodSelect');
-  if(_gs) _gs.addEventListener('change',function(e){
-    APP.marketPeriod = e.target.value;
-    MKT_PERIOD = APP.marketPeriod;
-    mktRerenderAll();
-    syncSalesPeriod();
-  });
-return;
-  // Tab 点击 → 平滑滚动到对应锚点
+  // 3-Tab 切换：显示/隐藏对应 tab-content
+  const tabIds = {'market':'tabMarket','sales':'tabSales','smjj':'tabSmjj','smzg':'tabSmzg'};
   document.querySelectorAll('#appTabs button').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const tab = btn.dataset.tab;
-      const anchorId = tab==='market'?'anchorMarket':'anchorSales';
-      const target = document.getElementById(anchorId);
-      if(target){
-        target.scrollIntoView({behavior:'smooth',block:'start'});
-      }
-      // 立即切换高亮（IntersectionObserver 也会更新，但点击需要即时反馈）
+      // 切换高亮
       document.querySelectorAll('#appTabs button').forEach(b=>b.classList.remove('active'));
       btn.classList.add('active');
       APP.currentTab = tab;
-      updateSlsTopVisibility(tab);
+      // 显示/隐藏 tab-content
+      Object.entries(tabIds).forEach(([k,v])=>{
+        const el=document.getElementById(v);
+        if(el) el.style.display = (k===tab) ? 'block' : 'none';
+      });
+      updateTopPeriodVisibility(tab);
+      // 懒初始化私募基金 Tab
+      if(tab==='smjj' && typeof window._smjLazyInit==='function') window._smjLazyInit();
+      if(tab==='smzg' && typeof window._smzgLazyInit==='function') window._smzgLazyInit();
+      // Tab 切换后 resize 所有 echarts（解决隐藏容器初始化尺寸问题）
+      setTimeout(()=>window.dispatchEvent(new Event('resize')), 50);
     });
   });
-  
-  // 滚动监听：自动高亮当前可见模块对应的 Tab
-  const observer = new IntersectionObserver((entries)=>{
-    entries.forEach(entry=>{
-      if(entry.isIntersecting){
-        const tab = entry.target.id === 'anchorMarket' ? 'market' : 'sales';
-        document.querySelectorAll('#appTabs button').forEach(b=>{
-          b.classList.toggle('active', b.dataset.tab===tab);
-        });
-        APP.currentTab = tab;
-        updateSlsTopVisibility(tab);
-      }
-    });
-  },{
-    rootMargin:'-56px 0px -60% 0px', // sticky nav 高度 ~56px
-    threshold:0
-  });
-  ['anchorMarket','anchorSales'].forEach(id=>{
-    const el = document.getElementById(id);
-    if(el) observer.observe(el);
-  });
-  
-  // 全局报告期下拉
+
+  // 顶部报告期下拉：公募市场总览
   const globalSel = document.getElementById('globalPeriodSelect');
-  globalSel.addEventListener('change',e=>{
+  if(globalSel) globalSel.addEventListener('change',e=>{
     APP.marketPeriod = e.target.value;
-    // 同步给市场总览模块
     MKT_PERIOD = APP.marketPeriod;
     mktRerenderAll();
-    // 同步给销售榜（映射到半年期）
     syncSalesPeriod();
   });
+  // 注：私募基金/私募资管 报告期 select 的 change 监听已由各自 smj_/smzg_initPeriodSelect 内置实现
+  // 这里不再重复绑定，避免 renderAll 双跑
 }
 
 function syncSalesPeriod(){
@@ -1717,6 +1870,9 @@ window.addEventListener('DOMContentLoaded',()=>{
   initAppShell();
   mktInit();
   slsInit();
+  // 默认显示 market tab 对应的 nav select（updateTopPeriodVisibility 仅在 click 时调用，
+  // 这里在初始化时主动跑一次以保证默认 tab 的 select 可见）
+  updateTopPeriodVisibility('market');
 });
 
 // 监听市场总览数据就绪 -> 填充全局下拉
@@ -1739,6 +1895,4347 @@ function waitForMktReady(){
   }
 }
 waitForMktReady();
+
+// === 私募基金总览 (SMJ) ===
+const SMJ_DATA = {
+  "2025-07": {
+    "mgr_total": 19700,
+    "fund_count": 139430,
+    "aum_trillion": 20.68,
+    "mgr_securities": 6,
+    "mgr_pe_vc": 16,
+    "mgr_asset_alloc": 6,
+    "mgr_other": 187,
+    "new_count": 1689,
+    "new_scale_yi": 1074.27,
+    "fund_alive_count": 139430,
+    "sec_count": 82059,
+    "sec_aum": 5.88,
+    "pe_count": 30193,
+    "pe_aum": 11.01,
+    "vc_count": 26328,
+    "vc_aum": 3.46,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3234,
+        "fund": 22029,
+        "aum_yi": 48630.57
+      },
+      {
+        "name": "天津市",
+        "mgr": 318,
+        "fund": 1963,
+        "aum_yi": 5638.2
+      },
+      {
+        "name": "河北省",
+        "mgr": 78,
+        "fund": 251,
+        "aum_yi": 1115.35
+      },
+      {
+        "name": "山西省",
+        "mgr": 54,
+        "fund": 192,
+        "aum_yi": 1376.87
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 46,
+        "fund": 145,
+        "aum_yi": 342.75
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 53,
+        "fund": 149,
+        "aum_yi": 101.62
+      },
+      {
+        "name": "大连市",
+        "mgr": 47,
+        "fund": 209,
+        "aum_yi": 74.45
+      },
+      {
+        "name": "吉林省",
+        "mgr": 45,
+        "fund": 118,
+        "aum_yi": 330.86
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 37,
+        "fund": 84,
+        "aum_yi": 121.67
+      },
+      {
+        "name": "上海市",
+        "mgr": 3695,
+        "fund": 40381,
+        "aum_yi": 52686.84
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1203,
+        "fund": 6169,
+        "aum_yi": 11913.53
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1569,
+        "fund": 10414,
+        "aum_yi": 9778.75
+      },
+      {
+        "name": "宁波市",
+        "mgr": 590,
+        "fund": 4650,
+        "aum_yi": 6458.91
+      },
+      {
+        "name": "安徽省",
+        "mgr": 216,
+        "fund": 1330,
+        "aum_yi": 3733.09
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 223,
+        "fund": 1530,
+        "aum_yi": 1656.61
+      },
+      {
+        "name": "厦门市",
+        "mgr": 323,
+        "fund": 2056,
+        "aum_yi": 2028.87
+      },
+      {
+        "name": "江西省",
+        "mgr": 227,
+        "fund": 1164,
+        "aum_yi": 1316.98
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 363,
+        "fund": 1518,
+        "aum_yi": 1920.24
+      },
+      {
+        "name": "青岛市",
+        "mgr": 344,
+        "fund": 2348,
+        "aum_yi": 2129.31
+      },
+      {
+        "name": "河南省",
+        "mgr": 145,
+        "fund": 521,
+        "aum_yi": 1068.03
+      },
+      {
+        "name": "湖北省",
+        "mgr": 350,
+        "fund": 1240,
+        "aum_yi": 2387.9
+      },
+      {
+        "name": "湖南省",
+        "mgr": 251,
+        "fund": 1246,
+        "aum_yi": 1482.55
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1561,
+        "fund": 10984,
+        "aum_yi": 13037.11
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2961,
+        "fund": 18331,
+        "aum_yi": 19702.65
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 397,
+        "aum_yi": 1613.14
+      },
+      {
+        "name": "海南省",
+        "mgr": 574,
+        "fund": 4561,
+        "aum_yi": 3256.84
+      },
+      {
+        "name": "重庆市",
+        "mgr": 141,
+        "fund": 586,
+        "aum_yi": 1737.09
+      },
+      {
+        "name": "四川省",
+        "mgr": 355,
+        "fund": 1613,
+        "aum_yi": 2927.12
+      },
+      {
+        "name": "贵州省",
+        "mgr": 57,
+        "fund": 248,
+        "aum_yi": 1911.47
+      },
+      {
+        "name": "云南省",
+        "mgr": 63,
+        "fund": 158,
+        "aum_yi": 977.01
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 123,
+        "fund": 1141,
+        "aum_yi": 2627.8
+      },
+      {
+        "name": "陕西省",
+        "mgr": 244,
+        "fund": 1176,
+        "aum_yi": 1243.61
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 32,
+        "fund": 68,
+        "aum_yi": 136.43
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 94.62
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 27,
+        "fund": 82,
+        "aum_yi": 199.86
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 67,
+        "fund": 351,
+        "aum_yi": 1061.63
+      }
+    ]
+  },
+  "2025-08": {
+    "mgr_total": 19614,
+    "fund_count": 137922,
+    "aum_trillion": 20.73,
+    "mgr_securities": 3,
+    "mgr_pe_vc": 5,
+    "mgr_asset_alloc": 6,
+    "mgr_other": 184,
+    "new_count": 1539,
+    "new_scale_yi": 605.73,
+    "fund_alive_count": 137922,
+    "sec_count": 80521,
+    "sec_aum": 5.93,
+    "pe_count": 30144,
+    "pe_aum": 11.01,
+    "vc_count": 26419,
+    "vc_aum": 3.47,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3225,
+        "fund": 21826,
+        "aum_yi": 48698.59
+      },
+      {
+        "name": "天津市",
+        "mgr": 316,
+        "fund": 1937,
+        "aum_yi": 5610.99
+      },
+      {
+        "name": "河北省",
+        "mgr": 80,
+        "fund": 254,
+        "aum_yi": 1114.7
+      },
+      {
+        "name": "山西省",
+        "mgr": 54,
+        "fund": 190,
+        "aum_yi": 1376.55
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 46,
+        "fund": 143,
+        "aum_yi": 341.94
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 53,
+        "fund": 138,
+        "aum_yi": 100.64
+      },
+      {
+        "name": "大连市",
+        "mgr": 47,
+        "fund": 205,
+        "aum_yi": 74.53
+      },
+      {
+        "name": "吉林省",
+        "mgr": 45,
+        "fund": 117,
+        "aum_yi": 325.8
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 83,
+        "aum_yi": 121.61
+      },
+      {
+        "name": "上海市",
+        "mgr": 3682,
+        "fund": 40139,
+        "aum_yi": 53032.23
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1201,
+        "fund": 6169,
+        "aum_yi": 11930.82
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1562,
+        "fund": 10348,
+        "aum_yi": 9832.32
+      },
+      {
+        "name": "宁波市",
+        "mgr": 591,
+        "fund": 4592,
+        "aum_yi": 6481.17
+      },
+      {
+        "name": "安徽省",
+        "mgr": 216,
+        "fund": 1331,
+        "aum_yi": 3737.35
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 222,
+        "fund": 1497,
+        "aum_yi": 1655.86
+      },
+      {
+        "name": "厦门市",
+        "mgr": 320,
+        "fund": 2018,
+        "aum_yi": 2033.37
+      },
+      {
+        "name": "江西省",
+        "mgr": 223,
+        "fund": 1147,
+        "aum_yi": 1319.05
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 360,
+        "fund": 1495,
+        "aum_yi": 1918.36
+      },
+      {
+        "name": "青岛市",
+        "mgr": 338,
+        "fund": 2321,
+        "aum_yi": 2141.01
+      },
+      {
+        "name": "河南省",
+        "mgr": 144,
+        "fund": 490,
+        "aum_yi": 1062.26
+      },
+      {
+        "name": "湖北省",
+        "mgr": 344,
+        "fund": 1209,
+        "aum_yi": 2333.4
+      },
+      {
+        "name": "湖南省",
+        "mgr": 251,
+        "fund": 1231,
+        "aum_yi": 1485.12
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1553,
+        "fund": 10720,
+        "aum_yi": 13034.46
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2953,
+        "fund": 18028,
+        "aum_yi": 19737.96
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 386,
+        "aum_yi": 1616.18
+      },
+      {
+        "name": "海南省",
+        "mgr": 568,
+        "fund": 4523,
+        "aum_yi": 3265.47
+      },
+      {
+        "name": "重庆市",
+        "mgr": 139,
+        "fund": 577,
+        "aum_yi": 1738.2
+      },
+      {
+        "name": "四川省",
+        "mgr": 353,
+        "fund": 1605,
+        "aum_yi": 2935.71
+      },
+      {
+        "name": "贵州省",
+        "mgr": 56,
+        "fund": 245,
+        "aum_yi": 1887.59
+      },
+      {
+        "name": "云南省",
+        "mgr": 61,
+        "fund": 152,
+        "aum_yi": 972.46
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 122,
+        "fund": 1122,
+        "aum_yi": 2624.8
+      },
+      {
+        "name": "陕西省",
+        "mgr": 244,
+        "fund": 1158,
+        "aum_yi": 1222.72
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 31,
+        "fund": 67,
+        "aum_yi": 138.3
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 94.62
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 27,
+        "fund": 81,
+        "aum_yi": 199.83
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 67,
+        "fund": 351,
+        "aum_yi": 1074.58
+      }
+    ]
+  },
+  "2025-09": {
+    "mgr_total": 19404,
+    "fund_count": 137245,
+    "aum_trillion": 20.74,
+    "mgr_securities": 10,
+    "mgr_pe_vc": 11607,
+    "mgr_asset_alloc": 6,
+    "mgr_other": 177,
+    "new_count": 1605,
+    "new_scale_yi": 711.74,
+    "fund_alive_count": 137245,
+    "sec_count": 79845,
+    "sec_aum": 5.97,
+    "pe_count": 29952,
+    "pe_aum": 10.98,
+    "vc_count": 26661,
+    "vc_aum": 3.48,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3193,
+        "fund": 21719,
+        "aum_yi": 48723.82
+      },
+      {
+        "name": "天津市",
+        "mgr": 311,
+        "fund": 1918,
+        "aum_yi": 5598.84
+      },
+      {
+        "name": "河北省",
+        "mgr": 80,
+        "fund": 255,
+        "aum_yi": 1116.47
+      },
+      {
+        "name": "山西省",
+        "mgr": 53,
+        "fund": 178,
+        "aum_yi": 1361.42
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 45,
+        "fund": 141,
+        "aum_yi": 341.8
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 53,
+        "fund": 138,
+        "aum_yi": 101.34
+      },
+      {
+        "name": "大连市",
+        "mgr": 46,
+        "fund": 199,
+        "aum_yi": 75.09
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 116,
+        "aum_yi": 325.52
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 83,
+        "aum_yi": 121.68
+      },
+      {
+        "name": "上海市",
+        "mgr": 3648,
+        "fund": 40028,
+        "aum_yi": 53251.97
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1192,
+        "fund": 6164,
+        "aum_yi": 11903.15
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1556,
+        "fund": 10346,
+        "aum_yi": 9880.28
+      },
+      {
+        "name": "宁波市",
+        "mgr": 586,
+        "fund": 4561,
+        "aum_yi": 6473.58
+      },
+      {
+        "name": "安徽省",
+        "mgr": 214,
+        "fund": 1322,
+        "aum_yi": 3737.39
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 221,
+        "fund": 1495,
+        "aum_yi": 1661.46
+      },
+      {
+        "name": "厦门市",
+        "mgr": 317,
+        "fund": 2001,
+        "aum_yi": 2038.27
+      },
+      {
+        "name": "江西省",
+        "mgr": 220,
+        "fund": 1135,
+        "aum_yi": 1318.54
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 358,
+        "fund": 1501,
+        "aum_yi": 1918.41
+      },
+      {
+        "name": "青岛市",
+        "mgr": 326,
+        "fund": 2303,
+        "aum_yi": 2153.53
+      },
+      {
+        "name": "河南省",
+        "mgr": 142,
+        "fund": 483,
+        "aum_yi": 1063.98
+      },
+      {
+        "name": "湖北省",
+        "mgr": 341,
+        "fund": 1221,
+        "aum_yi": 2325.48
+      },
+      {
+        "name": "湖南省",
+        "mgr": 246,
+        "fund": 1216,
+        "aum_yi": 1484.55
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1540,
+        "fund": 10656,
+        "aum_yi": 13049.28
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2902,
+        "fund": 17762,
+        "aum_yi": 19595.51
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 74,
+        "fund": 384,
+        "aum_yi": 1619.0
+      },
+      {
+        "name": "海南省",
+        "mgr": 565,
+        "fund": 4576,
+        "aum_yi": 3310.71
+      },
+      {
+        "name": "重庆市",
+        "mgr": 138,
+        "fund": 563,
+        "aum_yi": 1734.86
+      },
+      {
+        "name": "四川省",
+        "mgr": 351,
+        "fund": 1613,
+        "aum_yi": 2943.85
+      },
+      {
+        "name": "贵州省",
+        "mgr": 54,
+        "fund": 241,
+        "aum_yi": 1885.46
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 149,
+        "aum_yi": 972.41
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 119,
+        "fund": 1108,
+        "aum_yi": 2590.4
+      },
+      {
+        "name": "陕西省",
+        "mgr": 241,
+        "fund": 1154,
+        "aum_yi": 1230.42
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 31,
+        "fund": 67,
+        "aum_yi": 138.3
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 26,
+        "aum_yi": 92.3
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 27,
+        "fund": 79,
+        "aum_yi": 199.7
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 344,
+        "aum_yi": 1072.96
+      }
+    ]
+  },
+  "2025-10": {
+    "mgr_total": 19367,
+    "fund_count": 137905,
+    "aum_trillion": 22.05,
+    "mgr_securities": 3,
+    "mgr_pe_vc": 12,
+    "mgr_asset_alloc": 6,
+    "mgr_other": 175,
+    "new_count": 1389,
+    "new_scale_yi": 670.1,
+    "fund_alive_count": 137905,
+    "sec_count": 80214,
+    "sec_aum": 7.01,
+    "pe_count": 30018,
+    "pe_aum": 11.18,
+    "vc_count": 26887,
+    "vc_aum": 3.56,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3197,
+        "fund": 21837,
+        "aum_yi": 51173.68
+      },
+      {
+        "name": "天津市",
+        "mgr": 312,
+        "fund": 1931,
+        "aum_yi": 5697.86
+      },
+      {
+        "name": "河北省",
+        "mgr": 80,
+        "fund": 256,
+        "aum_yi": 1147.87
+      },
+      {
+        "name": "山西省",
+        "mgr": 52,
+        "fund": 178,
+        "aum_yi": 1360.42
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 45,
+        "fund": 140,
+        "aum_yi": 343.0
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 53,
+        "fund": 139,
+        "aum_yi": 108.96
+      },
+      {
+        "name": "大连市",
+        "mgr": 45,
+        "fund": 196,
+        "aum_yi": 76.33
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 116,
+        "aum_yi": 331.6
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 82,
+        "aum_yi": 112.48
+      },
+      {
+        "name": "上海市",
+        "mgr": 3641,
+        "fund": 40215,
+        "aum_yi": 58618.46
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1191,
+        "fund": 6209,
+        "aum_yi": 12370.05
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1554,
+        "fund": 10370,
+        "aum_yi": 10354.64
+      },
+      {
+        "name": "宁波市",
+        "mgr": 583,
+        "fund": 4565,
+        "aum_yi": 6981.57
+      },
+      {
+        "name": "安徽省",
+        "mgr": 211,
+        "fund": 1333,
+        "aum_yi": 3767.9
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 221,
+        "fund": 1506,
+        "aum_yi": 1679.33
+      },
+      {
+        "name": "厦门市",
+        "mgr": 316,
+        "fund": 2010,
+        "aum_yi": 2124.17
+      },
+      {
+        "name": "江西省",
+        "mgr": 217,
+        "fund": 1140,
+        "aum_yi": 1365.33
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 357,
+        "fund": 1502,
+        "aum_yi": 1950.92
+      },
+      {
+        "name": "青岛市",
+        "mgr": 325,
+        "fund": 2321,
+        "aum_yi": 2279.19
+      },
+      {
+        "name": "河南省",
+        "mgr": 143,
+        "fund": 485,
+        "aum_yi": 1074.29
+      },
+      {
+        "name": "湖北省",
+        "mgr": 341,
+        "fund": 1230,
+        "aum_yi": 2466.48
+      },
+      {
+        "name": "湖南省",
+        "mgr": 245,
+        "fund": 1222,
+        "aum_yi": 1505.26
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1536,
+        "fund": 10704,
+        "aum_yi": 13780.05
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2892,
+        "fund": 17829,
+        "aum_yi": 20744.31
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 74,
+        "fund": 388,
+        "aum_yi": 1642.17
+      },
+      {
+        "name": "海南省",
+        "mgr": 564,
+        "fund": 4655,
+        "aum_yi": 4181.56
+      },
+      {
+        "name": "重庆市",
+        "mgr": 138,
+        "fund": 560,
+        "aum_yi": 1857.77
+      },
+      {
+        "name": "四川省",
+        "mgr": 349,
+        "fund": 1618,
+        "aum_yi": 3093.8
+      },
+      {
+        "name": "贵州省",
+        "mgr": 54,
+        "fund": 239,
+        "aum_yi": 1941.27
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 150,
+        "aum_yi": 964.84
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 117,
+        "fund": 1113,
+        "aum_yi": 2745.98
+      },
+      {
+        "name": "陕西省",
+        "mgr": 241,
+        "fund": 1154,
+        "aum_yi": 1249.31
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 32,
+        "fund": 67,
+        "aum_yi": 137.27
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 26,
+        "aum_yi": 91.76
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 27,
+        "fund": 79,
+        "aum_yi": 142.71
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 340,
+        "aum_yi": 1051.2
+      }
+    ]
+  },
+  "2025-11": {
+    "mgr_total": 19314,
+    "fund_count": 138055,
+    "aum_trillion": 22.09,
+    "mgr_securities": 3,
+    "mgr_pe_vc": 11,
+    "mgr_asset_alloc": 6,
+    "mgr_other": 173,
+    "new_count": 1689,
+    "new_scale_yi": 713.42,
+    "fund_alive_count": 138055,
+    "sec_count": 80242,
+    "sec_aum": 7.04,
+    "pe_count": 29971,
+    "pe_aum": 11.18,
+    "vc_count": 27064,
+    "vc_aum": 3.57,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3190,
+        "fund": 21833,
+        "aum_yi": 51193.0
+      },
+      {
+        "name": "天津市",
+        "mgr": 310,
+        "fund": 1944,
+        "aum_yi": 5706.57
+      },
+      {
+        "name": "河北省",
+        "mgr": 79,
+        "fund": 256,
+        "aum_yi": 1147.84
+      },
+      {
+        "name": "山西省",
+        "mgr": 52,
+        "fund": 177,
+        "aum_yi": 1359.95
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 45,
+        "fund": 139,
+        "aum_yi": 343.08
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 52,
+        "fund": 138,
+        "aum_yi": 109.79
+      },
+      {
+        "name": "大连市",
+        "mgr": 45,
+        "fund": 199,
+        "aum_yi": 76.91
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 115,
+        "aum_yi": 331.61
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 80,
+        "aum_yi": 111.73
+      },
+      {
+        "name": "上海市",
+        "mgr": 3635,
+        "fund": 40316,
+        "aum_yi": 58769.63
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1190,
+        "fund": 6231,
+        "aum_yi": 12367.94
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1547,
+        "fund": 10355,
+        "aum_yi": 10337.36
+      },
+      {
+        "name": "宁波市",
+        "mgr": 584,
+        "fund": 4546,
+        "aum_yi": 7002.89
+      },
+      {
+        "name": "安徽省",
+        "mgr": 208,
+        "fund": 1341,
+        "aum_yi": 3775.8
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 221,
+        "fund": 1496,
+        "aum_yi": 1684.22
+      },
+      {
+        "name": "厦门市",
+        "mgr": 316,
+        "fund": 2009,
+        "aum_yi": 2132.85
+      },
+      {
+        "name": "江西省",
+        "mgr": 217,
+        "fund": 1136,
+        "aum_yi": 1355.19
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 354,
+        "fund": 1510,
+        "aum_yi": 1956.5
+      },
+      {
+        "name": "青岛市",
+        "mgr": 324,
+        "fund": 2324,
+        "aum_yi": 2260.14
+      },
+      {
+        "name": "河南省",
+        "mgr": 143,
+        "fund": 486,
+        "aum_yi": 1073.65
+      },
+      {
+        "name": "湖北省",
+        "mgr": 339,
+        "fund": 1238,
+        "aum_yi": 2461.02
+      },
+      {
+        "name": "湖南省",
+        "mgr": 244,
+        "fund": 1215,
+        "aum_yi": 1509.11
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1534,
+        "fund": 10700,
+        "aum_yi": 13800.66
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2878,
+        "fund": 17822,
+        "aum_yi": 20809.16
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 74,
+        "fund": 388,
+        "aum_yi": 1644.56
+      },
+      {
+        "name": "海南省",
+        "mgr": 563,
+        "fund": 4729,
+        "aum_yi": 4254.64
+      },
+      {
+        "name": "重庆市",
+        "mgr": 137,
+        "fund": 555,
+        "aum_yi": 1858.74
+      },
+      {
+        "name": "四川省",
+        "mgr": 349,
+        "fund": 1626,
+        "aum_yi": 3119.72
+      },
+      {
+        "name": "贵州省",
+        "mgr": 54,
+        "fund": 237,
+        "aum_yi": 1941.26
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 149,
+        "aum_yi": 965.36
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 117,
+        "fund": 1104,
+        "aum_yi": 2736.1
+      },
+      {
+        "name": "陕西省",
+        "mgr": 241,
+        "fund": 1153,
+        "aum_yi": 1256.48
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 32,
+        "fund": 67,
+        "aum_yi": 137.26
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 91.88
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 26,
+        "fund": 78,
+        "aum_yi": 200.72
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 336,
+        "aum_yi": 1051.1
+      }
+    ]
+  },
+  "2025-12": {
+    "mgr_total": 19231,
+    "fund_count": 138315,
+    "aum_trillion": 22.15,
+    "mgr_securities": 5,
+    "mgr_pe_vc": 8,
+    "mgr_asset_alloc": 6,
+    "mgr_other": 171,
+    "new_count": 2087,
+    "new_scale_yi": 989.0,
+    "fund_alive_count": 138315,
+    "sec_count": 80390,
+    "sec_aum": 7.08,
+    "pe_count": 29820,
+    "pe_aum": 11.19,
+    "vc_count": 27342,
+    "vc_aum": 3.58,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3177,
+        "fund": 21838,
+        "aum_yi": 51287.88
+      },
+      {
+        "name": "天津市",
+        "mgr": 307,
+        "fund": 1933,
+        "aum_yi": 5718.95
+      },
+      {
+        "name": "河北省",
+        "mgr": 79,
+        "fund": 257,
+        "aum_yi": 1148.02
+      },
+      {
+        "name": "山西省",
+        "mgr": 51,
+        "fund": 172,
+        "aum_yi": 1359.27
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 139,
+        "aum_yi": 345.36
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 50,
+        "fund": 135,
+        "aum_yi": 102.42
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 172,
+        "aum_yi": 68.27
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 115,
+        "aum_yi": 331.61
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 77,
+        "aum_yi": 111.68
+      },
+      {
+        "name": "上海市",
+        "mgr": 3629,
+        "fund": 40795,
+        "aum_yi": 59635.21
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1190,
+        "fund": 6252,
+        "aum_yi": 12403.65
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1536,
+        "fund": 10370,
+        "aum_yi": 10320.91
+      },
+      {
+        "name": "宁波市",
+        "mgr": 579,
+        "fund": 4543,
+        "aum_yi": 7038.02
+      },
+      {
+        "name": "安徽省",
+        "mgr": 208,
+        "fund": 1344,
+        "aum_yi": 3778.0
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 221,
+        "fund": 1485,
+        "aum_yi": 1690.08
+      },
+      {
+        "name": "厦门市",
+        "mgr": 317,
+        "fund": 2025,
+        "aum_yi": 2144.18
+      },
+      {
+        "name": "江西省",
+        "mgr": 214,
+        "fund": 1138,
+        "aum_yi": 1356.1
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 352,
+        "fund": 1506,
+        "aum_yi": 1972.07
+      },
+      {
+        "name": "青岛市",
+        "mgr": 322,
+        "fund": 2304,
+        "aum_yi": 2235.74
+      },
+      {
+        "name": "河南省",
+        "mgr": 143,
+        "fund": 493,
+        "aum_yi": 1075.83
+      },
+      {
+        "name": "湖北省",
+        "mgr": 336,
+        "fund": 1247,
+        "aum_yi": 2467.6
+      },
+      {
+        "name": "湖南省",
+        "mgr": 243,
+        "fund": 1226,
+        "aum_yi": 1511.31
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1530,
+        "fund": 10758,
+        "aum_yi": 13843.85
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2860,
+        "fund": 17534,
+        "aum_yi": 20328.62
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 74,
+        "fund": 384,
+        "aum_yi": 1646.09
+      },
+      {
+        "name": "海南省",
+        "mgr": 560,
+        "fund": 4789,
+        "aum_yi": 4293.29
+      },
+      {
+        "name": "重庆市",
+        "mgr": 137,
+        "fund": 547,
+        "aum_yi": 1851.9
+      },
+      {
+        "name": "四川省",
+        "mgr": 346,
+        "fund": 1613,
+        "aum_yi": 3124.08
+      },
+      {
+        "name": "贵州省",
+        "mgr": 54,
+        "fund": 238,
+        "aum_yi": 1951.64
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 145,
+        "aum_yi": 957.57
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 115,
+        "fund": 1080,
+        "aum_yi": 2696.61
+      },
+      {
+        "name": "陕西省",
+        "mgr": 241,
+        "fund": 1154,
+        "aum_yi": 1253.41
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 32,
+        "fund": 68,
+        "aum_yi": 137.82
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 91.88
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 26,
+        "fund": 75,
+        "aum_yi": 197.75
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 337,
+        "aum_yi": 1050.78
+      }
+    ]
+  },
+  "2026-01": {
+    "mgr_total": 19163,
+    "fund_count": 139153,
+    "aum_trillion": 22.44,
+    "mgr_securities": 3,
+    "mgr_pe_vc": 3,
+    "mgr_asset_alloc": 5,
+    "mgr_other": 170,
+    "new_count": 1235,
+    "new_scale_yi": 640.62,
+    "fund_alive_count": 139153,
+    "sec_count": 80801,
+    "sec_aum": 7.26,
+    "pe_count": 29862,
+    "pe_aum": 11.15,
+    "vc_count": 27729,
+    "vc_aum": 3.74,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3173,
+        "fund": 22012,
+        "aum_yi": 50775.22
+      },
+      {
+        "name": "天津市",
+        "mgr": 304,
+        "fund": 1940,
+        "aum_yi": 5925.55
+      },
+      {
+        "name": "河北省",
+        "mgr": 79,
+        "fund": 256,
+        "aum_yi": 1148.19
+      },
+      {
+        "name": "山西省",
+        "mgr": 50,
+        "fund": 173,
+        "aum_yi": 1383.67
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 141,
+        "aum_yi": 352.05
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 48,
+        "fund": 136,
+        "aum_yi": 102.33
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 168,
+        "aum_yi": 69.63
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 114,
+        "aum_yi": 351.41
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 78,
+        "aum_yi": 108.31
+      },
+      {
+        "name": "上海市",
+        "mgr": 3622,
+        "fund": 41039,
+        "aum_yi": 60733.99
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1185,
+        "fund": 6212,
+        "aum_yi": 12967.83
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1533,
+        "fund": 10450,
+        "aum_yi": 10587.04
+      },
+      {
+        "name": "宁波市",
+        "mgr": 574,
+        "fund": 4568,
+        "aum_yi": 7102.1
+      },
+      {
+        "name": "安徽省",
+        "mgr": 208,
+        "fund": 1364,
+        "aum_yi": 3894.32
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 219,
+        "fund": 1491,
+        "aum_yi": 1786.05
+      },
+      {
+        "name": "厦门市",
+        "mgr": 317,
+        "fund": 2047,
+        "aum_yi": 2189.45
+      },
+      {
+        "name": "江西省",
+        "mgr": 214,
+        "fund": 1145,
+        "aum_yi": 1363.95
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 352,
+        "fund": 1507,
+        "aum_yi": 1987.89
+      },
+      {
+        "name": "青岛市",
+        "mgr": 322,
+        "fund": 2326,
+        "aum_yi": 2257.76
+      },
+      {
+        "name": "河南省",
+        "mgr": 142,
+        "fund": 493,
+        "aum_yi": 998.63
+      },
+      {
+        "name": "湖北省",
+        "mgr": 334,
+        "fund": 1264,
+        "aum_yi": 2630.95
+      },
+      {
+        "name": "湖南省",
+        "mgr": 242,
+        "fund": 1234,
+        "aum_yi": 1574.58
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1520,
+        "fund": 10831,
+        "aum_yi": 13546.87
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2839,
+        "fund": 17627,
+        "aum_yi": 20552.22
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 384,
+        "aum_yi": 1675.44
+      },
+      {
+        "name": "海南省",
+        "mgr": 560,
+        "fund": 4846,
+        "aum_yi": 4686.98
+      },
+      {
+        "name": "重庆市",
+        "mgr": 137,
+        "fund": 544,
+        "aum_yi": 1768.82
+      },
+      {
+        "name": "四川省",
+        "mgr": 346,
+        "fund": 1626,
+        "aum_yi": 3288.98
+      },
+      {
+        "name": "贵州省",
+        "mgr": 54,
+        "fund": 239,
+        "aum_yi": 2045.77
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 146,
+        "aum_yi": 958.79
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 115,
+        "fund": 1084,
+        "aum_yi": 2690.73
+      },
+      {
+        "name": "陕西省",
+        "mgr": 240,
+        "fund": 1160,
+        "aum_yi": 1404.16
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 31,
+        "fund": 67,
+        "aum_yi": 138.98
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 90.07
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 26,
+        "fund": 75,
+        "aum_yi": 193.22
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 339,
+        "aum_yi": 1076.47
+      }
+    ]
+  },
+  "2026-02": {
+    "mgr_total": 19129,
+    "fund_count": 140263,
+    "aum_trillion": 22.6,
+    "mgr_securities": 1,
+    "mgr_pe_vc": 5,
+    "mgr_asset_alloc": 5,
+    "mgr_other": 170,
+    "new_count": 1899,
+    "new_scale_yi": 1329.93,
+    "fund_alive_count": 140263,
+    "sec_count": 81491,
+    "sec_aum": 7.35,
+    "pe_count": 29898,
+    "pe_aum": 11.16,
+    "vc_count": 28119,
+    "vc_aum": 3.8,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3172,
+        "fund": 22165,
+        "aum_yi": 51179.61
+      },
+      {
+        "name": "天津市",
+        "mgr": 304,
+        "fund": 1939,
+        "aum_yi": 5925.1
+      },
+      {
+        "name": "河北省",
+        "mgr": 79,
+        "fund": 256,
+        "aum_yi": 1149.08
+      },
+      {
+        "name": "山西省",
+        "mgr": 50,
+        "fund": 172,
+        "aum_yi": 1383.67
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 141,
+        "aum_yi": 352.05
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 48,
+        "fund": 136,
+        "aum_yi": 102.52
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 167,
+        "aum_yi": 69.63
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 114,
+        "aum_yi": 351.72
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 36,
+        "fund": 77,
+        "aum_yi": 108.32
+      },
+      {
+        "name": "上海市",
+        "mgr": 3619,
+        "fund": 41496,
+        "aum_yi": 61354.22
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1184,
+        "fund": 6264,
+        "aum_yi": 13010.2
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1525,
+        "fund": 10547,
+        "aum_yi": 10633.12
+      },
+      {
+        "name": "宁波市",
+        "mgr": 573,
+        "fund": 4597,
+        "aum_yi": 7188.62
+      },
+      {
+        "name": "安徽省",
+        "mgr": 208,
+        "fund": 1379,
+        "aum_yi": 3898.5
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 219,
+        "fund": 1498,
+        "aum_yi": 1788.73
+      },
+      {
+        "name": "厦门市",
+        "mgr": 317,
+        "fund": 2059,
+        "aum_yi": 2197.04
+      },
+      {
+        "name": "江西省",
+        "mgr": 213,
+        "fund": 1147,
+        "aum_yi": 1359.05
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 351,
+        "fund": 1512,
+        "aum_yi": 1988.01
+      },
+      {
+        "name": "青岛市",
+        "mgr": 321,
+        "fund": 2276,
+        "aum_yi": 2238.29
+      },
+      {
+        "name": "河南省",
+        "mgr": 142,
+        "fund": 494,
+        "aum_yi": 1002.61
+      },
+      {
+        "name": "湖北省",
+        "mgr": 333,
+        "fund": 1279,
+        "aum_yi": 2648.55
+      },
+      {
+        "name": "湖南省",
+        "mgr": 242,
+        "fund": 1252,
+        "aum_yi": 1572.43
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1519,
+        "fund": 10921,
+        "aum_yi": 13601.82
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2830,
+        "fund": 17709,
+        "aum_yi": 20795.94
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 387,
+        "aum_yi": 1670.42
+      },
+      {
+        "name": "海南省",
+        "mgr": 557,
+        "fund": 4957,
+        "aum_yi": 4756.83
+      },
+      {
+        "name": "重庆市",
+        "mgr": 136,
+        "fund": 541,
+        "aum_yi": 1769.02
+      },
+      {
+        "name": "四川省",
+        "mgr": 344,
+        "fund": 1634,
+        "aum_yi": 3311.41
+      },
+      {
+        "name": "贵州省",
+        "mgr": 54,
+        "fund": 239,
+        "aum_yi": 2045.13
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 146,
+        "aum_yi": 958.9
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 115,
+        "fund": 1084,
+        "aum_yi": 2686.75
+      },
+      {
+        "name": "陕西省",
+        "mgr": 240,
+        "fund": 1168,
+        "aum_yi": 1399.92
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 31,
+        "fund": 67,
+        "aum_yi": 137.42
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 90.07
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 26,
+        "fund": 75,
+        "aum_yi": 193.42
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 341,
+        "aum_yi": 1078.02
+      }
+    ]
+  },
+  "2026-03": {
+    "mgr_total": 19067,
+    "fund_count": 140931,
+    "aum_trillion": 22.72,
+    "mgr_securities": 8,
+    "mgr_pe_vc": 3,
+    "mgr_asset_alloc": 3,
+    "mgr_other": 168,
+    "new_count": 2368,
+    "new_scale_yi": 1192.99,
+    "fund_alive_count": 140931,
+    "sec_count": 81745,
+    "sec_aum": 7.46,
+    "pe_count": 29887,
+    "pe_aum": 11.16,
+    "vc_count": 28554,
+    "vc_aum": 3.82,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3165,
+        "fund": 22215,
+        "aum_yi": 51307.78
+      },
+      {
+        "name": "天津市",
+        "mgr": 304,
+        "fund": 1938,
+        "aum_yi": 5921.3
+      },
+      {
+        "name": "河北省",
+        "mgr": 79,
+        "fund": 256,
+        "aum_yi": 1149.23
+      },
+      {
+        "name": "山西省",
+        "mgr": 49,
+        "fund": 172,
+        "aum_yi": 1383.67
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 143,
+        "aum_yi": 354.66
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 49,
+        "fund": 139,
+        "aum_yi": 102.8
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 160,
+        "aum_yi": 68.99
+      },
+      {
+        "name": "吉林省",
+        "mgr": 44,
+        "fund": 113,
+        "aum_yi": 351.9
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 35,
+        "fund": 75,
+        "aum_yi": 108.26
+      },
+      {
+        "name": "上海市",
+        "mgr": 3620,
+        "fund": 41821,
+        "aum_yi": 61985.37
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1180,
+        "fund": 6331,
+        "aum_yi": 13025.41
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1516,
+        "fund": 10659,
+        "aum_yi": 10725.68
+      },
+      {
+        "name": "宁波市",
+        "mgr": 570,
+        "fund": 4638,
+        "aum_yi": 7328.26
+      },
+      {
+        "name": "安徽省",
+        "mgr": 205,
+        "fund": 1382,
+        "aum_yi": 3877.34
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 219,
+        "fund": 1499,
+        "aum_yi": 1791.35
+      },
+      {
+        "name": "厦门市",
+        "mgr": 317,
+        "fund": 2066,
+        "aum_yi": 2206.3
+      },
+      {
+        "name": "江西省",
+        "mgr": 211,
+        "fund": 1142,
+        "aum_yi": 1355.63
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 349,
+        "fund": 1494,
+        "aum_yi": 1983.94
+      },
+      {
+        "name": "青岛市",
+        "mgr": 320,
+        "fund": 2282,
+        "aum_yi": 2250.51
+      },
+      {
+        "name": "河南省",
+        "mgr": 141,
+        "fund": 492,
+        "aum_yi": 1003.95
+      },
+      {
+        "name": "湖北省",
+        "mgr": 331,
+        "fund": 1288,
+        "aum_yi": 2665.83
+      },
+      {
+        "name": "湖南省",
+        "mgr": 242,
+        "fund": 1260,
+        "aum_yi": 1577.55
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1511,
+        "fund": 10913,
+        "aum_yi": 13645.84
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2817,
+        "fund": 17690,
+        "aum_yi": 20835.67
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 388,
+        "aum_yi": 1684.87
+      },
+      {
+        "name": "海南省",
+        "mgr": 556,
+        "fund": 5063,
+        "aum_yi": 4822.91
+      },
+      {
+        "name": "重庆市",
+        "mgr": 136,
+        "fund": 542,
+        "aum_yi": 1772.42
+      },
+      {
+        "name": "四川省",
+        "mgr": 342,
+        "fund": 1632,
+        "aum_yi": 3329.01
+      },
+      {
+        "name": "贵州省",
+        "mgr": 53,
+        "fund": 238,
+        "aum_yi": 2043.86
+      },
+      {
+        "name": "云南省",
+        "mgr": 59,
+        "fund": 145,
+        "aum_yi": 959.09
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 114,
+        "fund": 1081,
+        "aum_yi": 2689.37
+      },
+      {
+        "name": "陕西省",
+        "mgr": 238,
+        "fund": 1161,
+        "aum_yi": 1401.83
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 31,
+        "fund": 69,
+        "aum_yi": 144.82
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 90.07
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 26,
+        "fund": 74,
+        "aum_yi": 192.97
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 66,
+        "fund": 343,
+        "aum_yi": 1078.96
+      }
+    ]
+  },
+  "2026-04": {
+    "mgr_total": 18792,
+    "fund_count": 142078,
+    "aum_trillion": 23.46,
+    "mgr_securities": 5,
+    "mgr_pe_vc": 6,
+    "mgr_asset_alloc": 3,
+    "mgr_other": 162,
+    "new_count": 2348,
+    "new_scale_yi": 928.68,
+    "fund_alive_count": 142078,
+    "sec_count": 82705,
+    "sec_aum": 7.85,
+    "pe_count": 29749,
+    "pe_aum": 11.38,
+    "vc_count": 28952,
+    "vc_aum": 3.96,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3111,
+        "fund": 22350,
+        "aum_yi": 53571.18
+      },
+      {
+        "name": "天津市",
+        "mgr": 302,
+        "fund": 1944,
+        "aum_yi": 6015.39
+      },
+      {
+        "name": "河北省",
+        "mgr": 75,
+        "fund": 254,
+        "aum_yi": 1174.37
+      },
+      {
+        "name": "山西省",
+        "mgr": 49,
+        "fund": 169,
+        "aum_yi": 1382.64
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 143,
+        "aum_yi": 363.19
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 49,
+        "fund": 140,
+        "aum_yi": 103.2
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 161,
+        "aum_yi": 67.17
+      },
+      {
+        "name": "吉林省",
+        "mgr": 43,
+        "fund": 112,
+        "aum_yi": 360.66
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 35,
+        "fund": 75,
+        "aum_yi": 108.26
+      },
+      {
+        "name": "上海市",
+        "mgr": 3567,
+        "fund": 42291,
+        "aum_yi": 63952.47
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1172,
+        "fund": 6349,
+        "aum_yi": 13411.85
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1498,
+        "fund": 10731,
+        "aum_yi": 11024.73
+      },
+      {
+        "name": "宁波市",
+        "mgr": 560,
+        "fund": 4663,
+        "aum_yi": 7540.08
+      },
+      {
+        "name": "安徽省",
+        "mgr": 204,
+        "fund": 1403,
+        "aum_yi": 4019.73
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 217,
+        "fund": 1515,
+        "aum_yi": 1818.43
+      },
+      {
+        "name": "厦门市",
+        "mgr": 315,
+        "fund": 2084,
+        "aum_yi": 2283.21
+      },
+      {
+        "name": "江西省",
+        "mgr": 210,
+        "fund": 1146,
+        "aum_yi": 1343.81
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 344,
+        "fund": 1500,
+        "aum_yi": 1984.99
+      },
+      {
+        "name": "青岛市",
+        "mgr": 317,
+        "fund": 2313,
+        "aum_yi": 2397.62
+      },
+      {
+        "name": "河南省",
+        "mgr": 141,
+        "fund": 497,
+        "aum_yi": 1018.16
+      },
+      {
+        "name": "湖北省",
+        "mgr": 325,
+        "fund": 1314,
+        "aum_yi": 2813.33
+      },
+      {
+        "name": "湖南省",
+        "mgr": 240,
+        "fund": 1275,
+        "aum_yi": 1595.61
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1486,
+        "fund": 10942,
+        "aum_yi": 14012.0
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2762,
+        "fund": 17786,
+        "aum_yi": 21212.74
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 392,
+        "aum_yi": 1696.95
+      },
+      {
+        "name": "海南省",
+        "mgr": 554,
+        "fund": 5204,
+        "aum_yi": 5505.43
+      },
+      {
+        "name": "重庆市",
+        "mgr": 132,
+        "fund": 543,
+        "aum_yi": 1725.29
+      },
+      {
+        "name": "四川省",
+        "mgr": 331,
+        "fund": 1643,
+        "aum_yi": 3445.89
+      },
+      {
+        "name": "贵州省",
+        "mgr": 53,
+        "fund": 238,
+        "aum_yi": 2060.76
+      },
+      {
+        "name": "云南省",
+        "mgr": 58,
+        "fund": 144,
+        "aum_yi": 962.87
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 112,
+        "fund": 1081,
+        "aum_yi": 2671.9
+      },
+      {
+        "name": "陕西省",
+        "mgr": 238,
+        "fund": 1162,
+        "aum_yi": 1423.21
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 30,
+        "fund": 70,
+        "aum_yi": 148.41
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 87.88
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 25,
+        "fund": 76,
+        "aum_yi": 188.25
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 65,
+        "fund": 341,
+        "aum_yi": 1066.69
+      }
+    ]
+  },
+  "2026-05": {
+    "mgr_total": 18728,
+    "fund_count": 142470,
+    "aum_trillion": 23.53,
+    "mgr_securities": 4,
+    "mgr_pe_vc": 3,
+    "mgr_asset_alloc": 3,
+    "mgr_other": 162,
+    "new_count": 1693,
+    "new_scale_yi": 688.07,
+    "fund_alive_count": 142470,
+    "sec_count": 82759,
+    "sec_aum": 7.92,
+    "pe_count": 29713,
+    "pe_aum": 11.37,
+    "vc_count": 29335,
+    "vc_aum": 3.98,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3106,
+        "fund": 22363,
+        "aum_yi": 53612.31
+      },
+      {
+        "name": "天津市",
+        "mgr": 301,
+        "fund": 1939,
+        "aum_yi": 6031.37
+      },
+      {
+        "name": "河北省",
+        "mgr": 75,
+        "fund": 254,
+        "aum_yi": 1174.43
+      },
+      {
+        "name": "山西省",
+        "mgr": 49,
+        "fund": 169,
+        "aum_yi": 1382.85
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 142,
+        "aum_yi": 363.21
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 49,
+        "fund": 140,
+        "aum_yi": 105.0
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 162,
+        "aum_yi": 67.35
+      },
+      {
+        "name": "吉林省",
+        "mgr": 43,
+        "fund": 112,
+        "aum_yi": 360.4
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 35,
+        "fund": 76,
+        "aum_yi": 108.66
+      },
+      {
+        "name": "上海市",
+        "mgr": 3558,
+        "fund": 42453,
+        "aum_yi": 64338.6
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1165,
+        "fund": 6378,
+        "aum_yi": 13469.58
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1494,
+        "fund": 10804,
+        "aum_yi": 11059.74
+      },
+      {
+        "name": "宁波市",
+        "mgr": 559,
+        "fund": 4695,
+        "aum_yi": 7623.77
+      },
+      {
+        "name": "安徽省",
+        "mgr": 204,
+        "fund": 1420,
+        "aum_yi": 4058.29
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 215,
+        "fund": 1506,
+        "aum_yi": 1793.1
+      },
+      {
+        "name": "厦门市",
+        "mgr": 316,
+        "fund": 2109,
+        "aum_yi": 2293.7
+      },
+      {
+        "name": "江西省",
+        "mgr": 210,
+        "fund": 1141,
+        "aum_yi": 1344.69
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 342,
+        "fund": 1506,
+        "aum_yi": 1990.1
+      },
+      {
+        "name": "青岛市",
+        "mgr": 316,
+        "fund": 2299,
+        "aum_yi": 2411.91
+      },
+      {
+        "name": "河南省",
+        "mgr": 140,
+        "fund": 500,
+        "aum_yi": 1015.44
+      },
+      {
+        "name": "湖北省",
+        "mgr": 323,
+        "fund": 1335,
+        "aum_yi": 2823.34
+      },
+      {
+        "name": "湖南省",
+        "mgr": 238,
+        "fund": 1276,
+        "aum_yi": 1596.82
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1485,
+        "fund": 10946,
+        "aum_yi": 14251.21
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2744,
+        "fund": 17852,
+        "aum_yi": 21293.72
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 75,
+        "fund": 388,
+        "aum_yi": 1696.85
+      },
+      {
+        "name": "海南省",
+        "mgr": 551,
+        "fund": 5168,
+        "aum_yi": 5469.64
+      },
+      {
+        "name": "重庆市",
+        "mgr": 131,
+        "fund": 544,
+        "aum_yi": 1725.68
+      },
+      {
+        "name": "四川省",
+        "mgr": 329,
+        "fund": 1660,
+        "aum_yi": 3450.15
+      },
+      {
+        "name": "贵州省",
+        "mgr": 53,
+        "fund": 237,
+        "aum_yi": 2060.52
+      },
+      {
+        "name": "云南省",
+        "mgr": 58,
+        "fund": 144,
+        "aum_yi": 954.04
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 109,
+        "fund": 1070,
+        "aum_yi": 2490.48
+      },
+      {
+        "name": "陕西省",
+        "mgr": 238,
+        "fund": 1164,
+        "aum_yi": 1432.75
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 30,
+        "fund": 70,
+        "aum_yi": 148.46
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 87.88
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 25,
+        "fund": 77,
+        "aum_yi": 188.36
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 65,
+        "fund": 344,
+        "aum_yi": 1068.01
+      }
+    ]
+  },
+  "2026-06": {
+    "mgr_total": 18662,
+    "fund_count": 143204,
+    "aum_trillion": 23.66,
+    "mgr_securities": 7309,
+    "mgr_pe_vc": 11189,
+    "mgr_asset_alloc": 3,
+    "mgr_other": 161,
+    "new_count": 2219,
+    "new_scale_yi": 1091.67,
+    "fund_alive_count": 143204,
+    "sec_count": 83106,
+    "sec_aum": 8.03,
+    "pe_count": 29644,
+    "pe_aum": 11.36,
+    "vc_count": 29797,
+    "vc_aum": 4.0,
+    "regions": [
+      {
+        "name": "北京市",
+        "mgr": 3096,
+        "fund": 22484,
+        "aum_yi": 53865.59
+      },
+      {
+        "name": "天津市",
+        "mgr": 300,
+        "fund": 1940,
+        "aum_yi": 6032.82
+      },
+      {
+        "name": "河北省",
+        "mgr": 75,
+        "fund": 251,
+        "aum_yi": 1168.37
+      },
+      {
+        "name": "山西省",
+        "mgr": 48,
+        "fund": 167,
+        "aum_yi": 1382.56
+      },
+      {
+        "name": "内蒙古自治区",
+        "mgr": 44,
+        "fund": 141,
+        "aum_yi": 363.12
+      },
+      {
+        "name": "辽宁省（不含大连）",
+        "mgr": 49,
+        "fund": 141,
+        "aum_yi": 105.16
+      },
+      {
+        "name": "大连市",
+        "mgr": 44,
+        "fund": 159,
+        "aum_yi": 65.96
+      },
+      {
+        "name": "吉林省",
+        "mgr": 43,
+        "fund": 112,
+        "aum_yi": 359.25
+      },
+      {
+        "name": "黑龙江省",
+        "mgr": 35,
+        "fund": 76,
+        "aum_yi": 108.66
+      },
+      {
+        "name": "上海市",
+        "mgr": 3550,
+        "fund": 42746,
+        "aum_yi": 65046.39
+      },
+      {
+        "name": "江苏省",
+        "mgr": 1160,
+        "fund": 6429,
+        "aum_yi": 13487.58
+      },
+      {
+        "name": "浙江省（不含宁波）",
+        "mgr": 1487,
+        "fund": 10875,
+        "aum_yi": 11074.34
+      },
+      {
+        "name": "宁波市",
+        "mgr": 557,
+        "fund": 4734,
+        "aum_yi": 7674.81
+      },
+      {
+        "name": "安徽省",
+        "mgr": 204,
+        "fund": 1433,
+        "aum_yi": 4068.31
+      },
+      {
+        "name": "福建省（不含厦门）",
+        "mgr": 215,
+        "fund": 1497,
+        "aum_yi": 1791.69
+      },
+      {
+        "name": "厦门市",
+        "mgr": 315,
+        "fund": 2113,
+        "aum_yi": 2303.05
+      },
+      {
+        "name": "江西省",
+        "mgr": 210,
+        "fund": 1137,
+        "aum_yi": 1339.5
+      },
+      {
+        "name": "山东省（不含青岛）",
+        "mgr": 340,
+        "fund": 1508,
+        "aum_yi": 1995.25
+      },
+      {
+        "name": "青岛市",
+        "mgr": 313,
+        "fund": 2319,
+        "aum_yi": 2382.08
+      },
+      {
+        "name": "河南省",
+        "mgr": 140,
+        "fund": 505,
+        "aum_yi": 1017.65
+      },
+      {
+        "name": "湖北省",
+        "mgr": 322,
+        "fund": 1359,
+        "aum_yi": 2826.78
+      },
+      {
+        "name": "湖南省",
+        "mgr": 238,
+        "fund": 1268,
+        "aum_yi": 1595.98
+      },
+      {
+        "name": "广东省（不含深圳）",
+        "mgr": 1478,
+        "fund": 10952,
+        "aum_yi": 14234.29
+      },
+      {
+        "name": "深圳市",
+        "mgr": 2730,
+        "fund": 17867,
+        "aum_yi": 21404.52
+      },
+      {
+        "name": "广西壮族自治区",
+        "mgr": 74,
+        "fund": 391,
+        "aum_yi": 1697.34
+      },
+      {
+        "name": "海南省",
+        "mgr": 551,
+        "fund": 5274,
+        "aum_yi": 5638.51
+      },
+      {
+        "name": "重庆市",
+        "mgr": 130,
+        "fund": 541,
+        "aum_yi": 1725.14
+      },
+      {
+        "name": "四川省",
+        "mgr": 328,
+        "fund": 1665,
+        "aum_yi": 3465.65
+      },
+      {
+        "name": "贵州省",
+        "mgr": 53,
+        "fund": 235,
+        "aum_yi": 2058.75
+      },
+      {
+        "name": "云南省",
+        "mgr": 57,
+        "fund": 147,
+        "aum_yi": 958.53
+      },
+      {
+        "name": "西藏自治区",
+        "mgr": 109,
+        "fund": 1062,
+        "aum_yi": 2493.32
+      },
+      {
+        "name": "陕西省",
+        "mgr": 238,
+        "fund": 1161,
+        "aum_yi": 1435.84
+      },
+      {
+        "name": "甘肃省",
+        "mgr": 30,
+        "fund": 69,
+        "aum_yi": 148.37
+      },
+      {
+        "name": "青海省",
+        "mgr": 9,
+        "fund": 27,
+        "aum_yi": 87.88
+      },
+      {
+        "name": "宁夏回族自治区",
+        "mgr": 25,
+        "fund": 76,
+        "aum_yi": 172.31
+      },
+      {
+        "name": "新疆维吾尔自治区",
+        "mgr": 65,
+        "fund": 343,
+        "aum_yi": 1069.37
+      }
+    ]
+  }
+};
+const SMJ_FONT_SANS = "'Inter','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif";
+const SMJ_FONT_MONO = "'JetBrains Mono','Inter',monospace";
+const SMJ_COLORS = ['#4a90f4','#a78bfa','#2dd284','#f5a623','#f0544c','#22d3ee'];
+
+const smj_periods = Object.keys(SMJ_DATA).sort();  // 升序 2025-07 ... 2026-06
+let smj_curPeriod = smj_periods[smj_periods.length-1];
+
+function smj_fmtInt(n){ return n==null?'—':n.toLocaleString('en-US'); }
+function smj_fmtT(n){ return n==null?'—':n.toFixed(2); }
+function smj_periodZh(p){ const [y,m]=p.split('-'); return `${y}年${parseInt(m)}月`; }
+
+// ---- 报告期下拉 ----
+function smj_initPeriodSelect(){
+  const sel=document.getElementById('smj_periodSelect');
+  sel.innerHTML='';
+  smj_periods.slice().reverse().forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p; o.textContent=smj_periodZh(p);
+    sel.appendChild(o);
+  });
+  sel.value=smj_curPeriod;
+  sel.addEventListener('change',()=>{ smj_curPeriod=sel.value; smj_renderAll(); });
+}
+
+// ---- KPI ----
+function smj_renderKpi(){
+  const d=SMJ_DATA[smj_curPeriod];
+  const idx=smj_periods.indexOf(smj_curPeriod);
+  const prev = idx>0 ? SMJ_DATA[smj_periods[idx-1]] : null;
+  function chg(cur,pv,unit='',digits=0){
+    if(pv==null||cur==null) return '<div class="kpi-change flat">—</div>';
+    const diff=cur-pv;
+    const cls = diff>0?'up':(diff<0?'down':'flat');
+    const sign = diff>0?'+':'';
+    const val = digits>0? diff.toFixed(digits): Math.round(diff).toLocaleString('en-US');
+    return `<div class="kpi-change ${cls}">环比 ${sign}${val}${unit}</div>`;
+  }
+  const cards=[
+    {cls:'',  label:'存续私募基金管理人', val:smj_fmtInt(d.mgr_total), unit:'家', ch:chg(d.mgr_total,prev&&prev.mgr_total,'家')},
+    {cls:'c2',label:'存续私募基金数量', val:smj_fmtInt(d.fund_count), unit:'只', ch:chg(d.fund_count,prev&&prev.fund_count,'只')},
+    {cls:'c3',label:'存续基金规模', val:smj_fmtT(d.aum_trillion), unit:'万亿元', ch:chg(d.aum_trillion,prev&&prev.aum_trillion,'万亿',2)},
+    {cls:'c4',label:'当月新备案', val:smj_fmtInt(d.new_count), unit:'只', ch:`<div class="kpi-change flat">新备案规模 ${smj_fmtInt(d.new_scale_yi)} 亿元</div>`},
+  ];
+  document.getElementById('smj_kpiRow').innerHTML = cards.map(c=>`
+    <div class="kpi-card ${c.cls}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.val}<span class="kpi-unit">${c.unit}</span></div>
+      ${c.ch}
+    </div>`).join('');
+}
+
+// ---- 规模走势 ----
+function smj_renderAum(){
+  const chart=echarts.init(document.getElementById('smj_chartAum'),'dark',{backgroundColor:'transparent'});
+  const x=smj_periods.map(smj_periodZh);
+  const y=smj_periods.map(p=>SMJ_DATA[p].aum_trillion);
+  chart.setOption({
+    grid:{left:50,right:24,top:30,bottom:40},
+    tooltip:{trigger:'axis',valueFormatter:v=>v+' 万亿元'},
+    xAxis:{type:'category',data:x,axisLabel:{color:'#a8b8cc',fontSize:11,rotate:30}},
+    yAxis:{type:'value',name:'万亿元',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+    series:[{type:'line',data:y,smooth:true,symbol:'circle',symbolSize:7,
+      lineStyle:{width:3,color:'#4a90f4'},itemStyle:{color:'#4a90f4'},
+      areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(74,144,244,0.35)'},{offset:1,color:'rgba(74,144,244,0.02)'}])},
+      label:{show:true,position:'top',color:'#eef3f8',fontSize:11,fontFamily:SMJ_FONT_MONO,formatter:'{c}'}
+    }]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 管理人/基金数走势 ----
+function smj_renderCount(){
+  const chart=echarts.init(document.getElementById('smj_chartCount'),'dark',{backgroundColor:'transparent'});
+  const x=smj_periods.map(smj_periodZh);
+  const funds=smj_periods.map(p=>SMJ_DATA[p].fund_count);
+  const mgrs=smj_periods.map(p=>SMJ_DATA[p].mgr_total);
+  chart.setOption({
+    grid:{left:60,right:60,top:40,bottom:40},
+    tooltip:{trigger:'axis'},
+    legend:{data:['存续基金只数','存续管理人'],textStyle:{color:'#a8b8cc',fontSize:12},top:6},
+    xAxis:{type:'category',data:x,axisLabel:{color:'#a8b8cc',fontSize:11,rotate:30}},
+    yAxis:[
+      {type:'value',name:'基金只数',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+      {type:'value',name:'管理人',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{show:false}}
+    ],
+    series:[
+      {name:'存续管理人',type:'bar',yAxisIndex:1,data:mgrs,itemStyle:{color:'rgba(167,139,250,0.55)'},barWidth:'45%'},
+      {name:'存续基金只数',type:'line',yAxisIndex:0,data:funds,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{width:3,color:'#2dd284'},itemStyle:{color:'#2dd284'}}
+    ]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 三大类型堆叠 ----
+function smj_renderTypeStack(){
+  const chart=echarts.init(document.getElementById('smj_chartTypeStack'),'dark',{backgroundColor:'transparent'});
+  const x=smj_periods.map(smj_periodZh);
+  const sec=smj_periods.map(p=>SMJ_DATA[p].sec_aum);
+  const pe=smj_periods.map(p=>SMJ_DATA[p].pe_aum);
+  const vc=smj_periods.map(p=>SMJ_DATA[p].vc_aum);
+  chart.setOption({
+    grid:{left:50,right:24,top:40,bottom:40},
+    tooltip:{trigger:'axis',valueFormatter:v=>v+' 万亿'},
+    legend:{data:['私募证券','私募股权','创业投资'],textStyle:{color:'#a8b8cc',fontSize:12},top:6},
+    xAxis:{type:'category',data:x,axisLabel:{color:'#a8b8cc',fontSize:11,rotate:30}},
+    yAxis:{type:'value',name:'万亿元',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+    series:[
+      {name:'私募证券',type:'bar',stack:'t',data:sec,itemStyle:{color:'#4a90f4'}},
+      {name:'私募股权',type:'bar',stack:'t',data:pe,itemStyle:{color:'#a78bfa'}},
+      {name:'创业投资',type:'bar',stack:'t',data:vc,itemStyle:{color:'#f5a623'}}
+    ]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 三大类型饼图 ----
+function smj_renderTypePie(){
+  const chart=echarts.init(document.getElementById('smj_chartTypePie'),'dark',{backgroundColor:'transparent'});
+  const d=SMJ_DATA[smj_curPeriod];
+  document.getElementById('smj_pieMonthLabel').textContent=smj_periodZh(smj_curPeriod);
+  const data=[
+    {name:'私募证券投资基金',value:d.sec_aum,itemStyle:{color:'#4a90f4'}},
+    {name:'私募股权投资基金',value:d.pe_aum,itemStyle:{color:'#a78bfa'}},
+    {name:'创业投资基金',value:d.vc_aum,itemStyle:{color:'#f5a623'}}
+  ];
+  chart.setOption({
+    tooltip:{trigger:'item',valueFormatter:v=>v+' 万亿'},
+    legend:{bottom:8,textStyle:{color:'#a8b8cc',fontSize:12}},
+    series:[{type:'pie',radius:['42%','68%'],center:['50%','46%'],data,
+      label:{color:'#eef3f8',fontFamily:SMJ_FONT_SANS,fontSize:12,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:'#a8b8cc'}}}]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 管理人类型饼图 ----
+function smj_renderMgrPie(){
+  const chart=echarts.init(document.getElementById('smj_chartMgrPie'),'dark',{backgroundColor:'transparent'});
+  const d=SMJ_DATA[smj_curPeriod];
+  document.getElementById('smj_mgrMonthLabel').textContent=smj_periodZh(smj_curPeriod);
+  const data=[
+    {name:'私募证券',value:d.mgr_securities,itemStyle:{color:'#4a90f4'}},
+    {name:'私募股权创投',value:d.mgr_pe_vc,itemStyle:{color:'#a78bfa'}},
+    {name:'资产配置',value:d.mgr_asset_alloc,itemStyle:{color:'#2dd284'}},
+    {name:'其他',value:d.mgr_other,itemStyle:{color:'#f5a623'}}
+  ];
+  chart.setOption({
+    tooltip:{trigger:'item',valueFormatter:v=>v+' 家'},
+    legend:{bottom:8,textStyle:{color:'#a8b8cc',fontSize:12}},
+    series:[{type:'pie',radius:['42%','68%'],center:['50%','46%'],data,
+      label:{color:'#eef3f8',fontFamily:SMJ_FONT_SANS,fontSize:12,formatter:'{b}\n{c}家'},
+      labelLine:{lineStyle:{color:'#a8b8cc'}}}]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 地域 TOP15 ----
+function smj_renderRegion(){
+  const chart=echarts.init(document.getElementById('smj_chartRegion'),'dark',{backgroundColor:'transparent'});
+  const d=SMJ_DATA[smj_curPeriod];
+  document.getElementById('smj_regionMonthLabel').textContent=smj_periodZh(smj_curPeriod);
+  const regs=(d.regions||[]).slice().sort((a,b)=>b.aum_yi-a.aum_yi).slice(0,15).reverse();
+  chart.setOption({
+    grid:{left:120,right:60,top:20,bottom:30},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'},valueFormatter:v=>v.toLocaleString('en-US')+' 亿元'},
+    xAxis:{type:'value',axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+    yAxis:{type:'category',data:regs.map(r=>r.name),axisLabel:{color:'#a8b8cc',fontSize:12}},
+    series:[{type:'bar',data:regs.map(r=>r.aum_yi),barWidth:'60%',
+      itemStyle:{color:new echarts.graphic.LinearGradient(0,0,1,0,[{offset:0,color:'#4a90f4'},{offset:1,color:'#a78bfa'}]),borderRadius:[0,4,4,0]},
+      label:{show:true,position:'right',color:'#eef3f8',fontSize:11,fontFamily:SMJ_FONT_MONO,formatter:p=>p.value.toLocaleString('en-US')}
+    }]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 地域表 ----
+function smj_renderRegionTable(){
+  const d=SMJ_DATA[smj_curPeriod];
+  document.getElementById('smj_tableMonthLabel').textContent=smj_periodZh(smj_curPeriod);
+  const regs=(d.regions||[]).slice().sort((a,b)=>b.aum_yi-a.aum_yi);
+  let html='<table><thead><tr><th>排名</th><th>辖区</th><th>管理人（家）</th><th>基金（只）</th><th>管理规模（亿元）</th><th>规模占比</th></tr></thead><tbody>';
+  const total=regs.reduce((s,r)=>s+r.aum_yi,0);
+  regs.forEach((r,i)=>{
+    const rk=i+1;
+    const badge = rk<=3?`r${rk}`:'rn';
+    html+=`<tr><td><span class="rank-badge ${badge}">${rk}</span></td><td>${r.name}</td>
+      <td>${smj_fmtInt(r.mgr)}</td><td>${smj_fmtInt(r.fund)}</td>
+      <td>${r.aum_yi.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td>${(r.aum_yi/total*100).toFixed(2)}%</td></tr>`;
+  });
+  html+='</tbody></table>';
+  document.getElementById('smj_regionTable').innerHTML=html;
+}
+
+function smj_renderAll(){
+  document.getElementById('smj_periodMeta').textContent='数据截至 '+smj_periodZh(smj_curPeriod)+'末';
+  document.getElementById('smj_footerPeriod').textContent=smj_periodZh(smj_curPeriod);
+  smj_renderKpi();
+  smj_renderAum();
+  smj_renderCount();
+  smj_renderTypeStack();
+  smj_renderTypePie();
+  smj_renderMgrPie();
+  smj_renderRegion();
+  smj_renderRegionTable();
+}
+
+// 私幕模板自带的 DOMContentLoaded 监听已改造：
+//  - initPeriodSelect 必须在 DOMContentLoaded 跑（填充 nav 上的 select）
+//  - renderAll 不在 DOMContentLoaded 跑（tab 容器可能 display:none，echarts 拿不到尺寸）
+// renderAll 由 _smjLazyInit 负责（切到 smjj tab 时触发）
+if (true) {
+  document.addEventListener('DOMContentLoaded',()=>{
+    smj_initPeriodSelect();
+  });
+}
+
+(function(){
+  // 懒初始化：tab-smjj 初始可能 display:none，echarts 无法获取尺寸
+  // 直到第一次切换到 smjj tab 时才初始化
+  // 注：smj_initPeriodSelect 已在 DOMContentLoaded 跑过（填充 nav 上的 select），
+  // 这里不再重复调用以避免重复绑定 change 监听
+  var _smjInited = false;
+  window._smjLazyInit = function() {
+    if (_smjInited) return;
+    _smjInited = true;
+    smj_renderAll();
+  };
+})();
+
+
+// === 私募资管总览 (SMZG) ===
+const SMZG_DATA = {
+  "2025-06": {
+    "aum_trillion": 12.09,
+    "aum_chg_yi": null,
+    "new_count": 1399,
+    "new_scale_yi": 547.44,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 863,
+        "scale_yi": 331.53,
+        "pct": 60.56
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 12,
+        "scale_yi": 4.68,
+        "pct": 0.85
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 242,
+        "scale_yi": 48.68,
+        "pct": 8.89
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 127,
+        "scale_yi": 93.27,
+        "pct": 17.04
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 155,
+        "scale_yi": 69.28,
+        "pct": 12.66
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 19289,
+        "count_pct": 52.18,
+        "scale_yi": 61099.41,
+        "scale_pct": 50.54
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 17679,
+        "count_pct": 47.82,
+        "scale_yi": 59783.1,
+        "scale_pct": 49.46
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4872,
+        "count_pct": 13.18,
+        "scale_yi": 17201.54,
+        "scale_pct": 14.23
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 16571,
+        "count_pct": 44.83,
+        "scale_yi": 88852.11,
+        "scale_pct": 73.5
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1742,
+        "count_pct": 4.71,
+        "scale_yi": 1398.36,
+        "scale_pct": 1.16
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 13783,
+        "count_pct": 37.28,
+        "scale_yi": 13430.51,
+        "scale_pct": 11.11
+      }
+    },
+    "stock_count": 36968,
+    "stock_scale_yi": 120882.51
+  },
+  "2025-07": {
+    "aum_trillion": 12.48,
+    "aum_chg_yi": null,
+    "new_count": 1874,
+    "new_scale_yi": 1059.72,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1209,
+        "scale_yi": 538.65,
+        "pct": 50.83
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 17,
+        "scale_yi": 23.03,
+        "pct": 2.17
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 257,
+        "scale_yi": 174.1,
+        "pct": 16.43
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 197,
+        "scale_yi": 269.05,
+        "pct": 25.39
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 194,
+        "scale_yi": 54.89,
+        "pct": 5.18
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 19661,
+        "count_pct": 52.0,
+        "scale_yi": 63311.99,
+        "scale_pct": 50.75
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 18145,
+        "count_pct": 48.0,
+        "scale_yi": 61445.23,
+        "scale_pct": 49.25
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4815,
+        "count_pct": 12.74,
+        "scale_yi": 17391.16,
+        "scale_pct": 13.94
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 16929,
+        "count_pct": 44.78,
+        "scale_yi": 91770.28,
+        "scale_pct": 73.56
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1730,
+        "count_pct": 4.58,
+        "scale_yi": 1301.92,
+        "scale_pct": 1.04
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 14332,
+        "count_pct": 37.91,
+        "scale_yi": 14293.86,
+        "scale_pct": 11.46
+      }
+    },
+    "stock_count": 37806,
+    "stock_scale_yi": 124757.22
+  },
+  "2025-08": {
+    "aum_trillion": 12.58,
+    "aum_chg_yi": null,
+    "new_count": 2011,
+    "new_scale_yi": 849.22,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1282,
+        "scale_yi": 480.93,
+        "pct": 56.63
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 22,
+        "scale_yi": 14.41,
+        "pct": 1.7
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 290,
+        "scale_yi": 72.37,
+        "pct": 8.52
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 199,
+        "scale_yi": 202.69,
+        "pct": 23.87
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 216,
+        "scale_yi": 78.1,
+        "pct": 9.2
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 20029,
+        "count_pct": 51.57,
+        "scale_yi": 63925.8,
+        "scale_pct": 50.8
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 18812,
+        "count_pct": 48.43,
+        "scale_yi": 61900.87,
+        "scale_pct": 49.2
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4834,
+        "count_pct": 12.45,
+        "scale_yi": 18172.61,
+        "scale_pct": 14.44
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 17210,
+        "count_pct": 44.31,
+        "scale_yi": 91545.51,
+        "scale_pct": 72.76
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1759,
+        "count_pct": 4.53,
+        "scale_yi": 1385.13,
+        "scale_pct": 1.1
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 15038,
+        "count_pct": 38.72,
+        "scale_yi": 14723.41,
+        "scale_pct": 11.7
+      }
+    },
+    "stock_count": 38841,
+    "stock_scale_yi": 125826.67
+  },
+  "2025-09": {
+    "aum_trillion": 12.46,
+    "aum_chg_yi": null,
+    "new_count": 2305,
+    "new_scale_yi": 831.47,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1537,
+        "scale_yi": 476.75,
+        "pct": 57.34
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 23,
+        "scale_yi": 13.04,
+        "pct": 1.57
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 344,
+        "scale_yi": 95.65,
+        "pct": 11.5
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 202,
+        "scale_yi": 138.79,
+        "pct": 16.69
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 197,
+        "scale_yi": 104.34,
+        "pct": 12.55
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 20417,
+        "count_pct": 50.84,
+        "scale_yi": 62727.03,
+        "scale_pct": 50.34
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 19746,
+        "count_pct": 49.16,
+        "scale_yi": 61889.56,
+        "scale_pct": 49.66
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4899,
+        "count_pct": 12.2,
+        "scale_yi": 18396.67,
+        "scale_pct": 14.76
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 17550,
+        "count_pct": 43.7,
+        "scale_yi": 89344.53,
+        "scale_pct": 71.7
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1784,
+        "count_pct": 4.44,
+        "scale_yi": 1507.39,
+        "scale_pct": 1.21
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 15930,
+        "count_pct": 39.66,
+        "scale_yi": 15367.99,
+        "scale_pct": 12.33
+      }
+    },
+    "stock_count": 40163,
+    "stock_scale_yi": 124616.59
+  },
+  "2025-10": {
+    "aum_trillion": 12.57,
+    "aum_chg_yi": null,
+    "new_count": 1474,
+    "new_scale_yi": 564.36,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 960,
+        "scale_yi": 299.86,
+        "pct": 53.13
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 14,
+        "scale_yi": 12.62,
+        "pct": 2.24
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 231,
+        "scale_yi": 101.61,
+        "pct": 18.0
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 114,
+        "scale_yi": 128.9,
+        "pct": 22.84
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 155,
+        "scale_yi": 21.37,
+        "pct": 3.79
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 20698,
+        "count_pct": 50.62,
+        "scale_yi": 63733.08,
+        "scale_pct": 50.7
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 20191,
+        "count_pct": 49.38,
+        "scale_yi": 61967.48,
+        "scale_pct": 49.3
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4926,
+        "count_pct": 12.05,
+        "scale_yi": 18522.34,
+        "scale_pct": 14.74
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 17753,
+        "count_pct": 43.42,
+        "scale_yi": 89970.39,
+        "scale_pct": 71.58
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1749,
+        "count_pct": 4.28,
+        "scale_yi": 1511.24,
+        "scale_pct": 1.2
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 16461,
+        "count_pct": 40.26,
+        "scale_yi": 15696.6,
+        "scale_pct": 12.49
+      }
+    },
+    "stock_count": 40889,
+    "stock_scale_yi": 125700.56
+  },
+  "2025-11": {
+    "aum_trillion": 12.51,
+    "aum_chg_yi": null,
+    "new_count": 2134,
+    "new_scale_yi": 852.21,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1439,
+        "scale_yi": 471.48,
+        "pct": 55.32
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 22,
+        "scale_yi": 41.04,
+        "pct": 4.82
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 297,
+        "scale_yi": 80.71,
+        "pct": 9.47
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 199,
+        "scale_yi": 223.78,
+        "pct": 26.26
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 176,
+        "scale_yi": 35.05,
+        "pct": 4.11
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 21307,
+        "count_pct": 50.47,
+        "scale_yi": 64315.8,
+        "scale_pct": 51.42
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 20913,
+        "count_pct": 49.53,
+        "scale_yi": 60764.58,
+        "scale_pct": 48.58
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4939,
+        "count_pct": 11.7,
+        "scale_yi": 18311.73,
+        "scale_pct": 14.64
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 18094,
+        "count_pct": 42.86,
+        "scale_yi": 89387.88,
+        "scale_pct": 71.46
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1834,
+        "count_pct": 4.34,
+        "scale_yi": 1602.21,
+        "scale_pct": 1.28
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 17353,
+        "count_pct": 41.1,
+        "scale_yi": 15778.55,
+        "scale_pct": 12.61
+      }
+    },
+    "stock_count": 42220,
+    "stock_scale_yi": 125080.38
+  },
+  "2025-12": {
+    "aum_trillion": 12.3,
+    "aum_chg_yi": null,
+    "new_count": 2307,
+    "new_scale_yi": 819.32,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1534,
+        "scale_yi": 467.53,
+        "pct": 57.06
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 41,
+        "scale_yi": 74.99,
+        "pct": 9.15
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 340,
+        "scale_yi": 84.97,
+        "pct": 10.37
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 213,
+        "scale_yi": 164.86,
+        "pct": 20.12
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 177,
+        "scale_yi": 26.36,
+        "pct": 3.22
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 21983,
+        "count_pct": 50.88,
+        "scale_yi": 63508.19,
+        "scale_pct": 51.63
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 21220,
+        "count_pct": 49.12,
+        "scale_yi": 59509.78,
+        "scale_pct": 48.37
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4830,
+        "count_pct": 11.18,
+        "scale_yi": 17598.22,
+        "scale_pct": 14.31
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 18416,
+        "count_pct": 42.63,
+        "scale_yi": 87009.21,
+        "scale_pct": 70.73
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1904,
+        "count_pct": 4.41,
+        "scale_yi": 1750.09,
+        "scale_pct": 1.42
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 18053,
+        "count_pct": 41.79,
+        "scale_yi": 16660.45,
+        "scale_pct": 13.54
+      }
+    },
+    "stock_count": 43203,
+    "stock_scale_yi": 123017.96
+  },
+  "2026-01": {
+    "aum_trillion": 12.37,
+    "aum_chg_yi": null,
+    "new_count": 2065,
+    "new_scale_yi": 837.07,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1495,
+        "scale_yi": 538.42,
+        "pct": 64.32
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 17,
+        "scale_yi": 14.62,
+        "pct": 1.75
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 329,
+        "scale_yi": 143.94,
+        "pct": 17.2
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 115,
+        "scale_yi": 123.25,
+        "pct": 14.72
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 108,
+        "scale_yi": 16.72,
+        "pct": 2.0
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 22291,
+        "count_pct": 50.33,
+        "scale_yi": 64231.86,
+        "scale_pct": 51.91
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 21996,
+        "count_pct": 49.67,
+        "scale_yi": 59516.61,
+        "scale_pct": 48.09
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4898,
+        "count_pct": 11.06,
+        "scale_yi": 18105.31,
+        "scale_pct": 14.63
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 18555,
+        "count_pct": 41.9,
+        "scale_yi": 86003.48,
+        "scale_pct": 69.5
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 18925,
+        "count_pct": 42.73,
+        "scale_yi": 17860.57,
+        "scale_pct": 14.43
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 1909,
+        "count_pct": 4.31,
+        "scale_yi": 1779.12,
+        "scale_pct": 1.44
+      }
+    },
+    "stock_count": 44287,
+    "stock_scale_yi": 123748.47
+  },
+  "2026-02": {
+    "aum_trillion": 12.5,
+    "aum_chg_yi": null,
+    "new_count": 1940,
+    "new_scale_yi": 782.39,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1494,
+        "scale_yi": 524.66,
+        "pct": 67.06
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 16,
+        "scale_yi": 25.53,
+        "pct": 3.26
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 219,
+        "scale_yi": 111.41,
+        "pct": 14.24
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 93,
+        "scale_yi": 99.62,
+        "pct": 12.73
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 117,
+        "scale_yi": 20.83,
+        "pct": 2.66
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 22647,
+        "count_pct": 49.68,
+        "scale_yi": 64992.44,
+        "scale_pct": 52.0
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 22942,
+        "count_pct": 50.32,
+        "scale_yi": 59988.96,
+        "scale_pct": 48.0
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4934,
+        "count_pct": 10.82,
+        "scale_yi": 18192.64,
+        "scale_pct": 14.56
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 18788,
+        "count_pct": 41.21,
+        "scale_yi": 86498.52,
+        "scale_pct": 69.21
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1868,
+        "count_pct": 4.1,
+        "scale_yi": 1730.41,
+        "scale_pct": 1.38
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 19999,
+        "count_pct": 43.87,
+        "scale_yi": 18559.84,
+        "scale_pct": 14.85
+      }
+    },
+    "stock_count": 45589,
+    "stock_scale_yi": 124981.4
+  },
+  "2026-03": {
+    "aum_trillion": 12.4,
+    "aum_chg_yi": null,
+    "new_count": 2608,
+    "new_scale_yi": 1220.05,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1909,
+        "scale_yi": 601.86,
+        "pct": 49.33
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 24,
+        "scale_yi": 223.38,
+        "pct": 18.31
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 348,
+        "scale_yi": 138.48,
+        "pct": 11.35
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 179,
+        "scale_yi": 229.9,
+        "pct": 18.84
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 147,
+        "scale_yi": 26.1,
+        "pct": 2.14
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 23255,
+        "count_pct": 49.24,
+        "scale_yi": 65003.47,
+        "scale_pct": 52.41
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 23971,
+        "count_pct": 50.76,
+        "scale_yi": 59030.91,
+        "scale_pct": 47.59
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 4980,
+        "count_pct": 10.55,
+        "scale_yi": 17822.49,
+        "scale_pct": 14.37
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 19033,
+        "count_pct": 40.3,
+        "scale_yi": 85892.06,
+        "scale_pct": 69.25
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 1951,
+        "count_pct": 4.13,
+        "scale_yi": 1787.56,
+        "scale_pct": 1.44
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 21262,
+        "count_pct": 45.02,
+        "scale_yi": 18532.27,
+        "scale_pct": 14.94
+      }
+    },
+    "stock_count": 47226,
+    "stock_scale_yi": 124034.38
+  },
+  "2026-04": {
+    "aum_trillion": 12.85,
+    "aum_chg_yi": 4458.94,
+    "new_count": 2694,
+    "new_scale_yi": 1352.67,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1901,
+        "scale_yi": 776.56,
+        "pct": 57.41
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 29,
+        "scale_yi": 44.18,
+        "pct": 3.27
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 383,
+        "scale_yi": 282.42,
+        "pct": 20.88
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 229,
+        "scale_yi": 219.26,
+        "pct": 16.21
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 148,
+        "scale_yi": 26.78,
+        "pct": 1.98
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 24102,
+        "count_pct": 49.1,
+        "scale_yi": 68533.03,
+        "scale_pct": 53.34
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 24990,
+        "count_pct": 50.9,
+        "scale_yi": 59960.29,
+        "scale_pct": 46.66
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 5039,
+        "count_pct": 10.26,
+        "scale_yi": 18494.1,
+        "scale_pct": 14.39
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 19395,
+        "count_pct": 39.51,
+        "scale_yi": 88204.24,
+        "scale_pct": 68.64
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 2037,
+        "count_pct": 4.15,
+        "scale_yi": 2018.41,
+        "scale_pct": 1.57
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 22621,
+        "count_pct": 46.08,
+        "scale_yi": 19776.57,
+        "scale_pct": 15.39
+      }
+    },
+    "stock_count": 49092,
+    "stock_scale_yi": 128493.32
+  },
+  "2026-05": {
+    "aum_trillion": 13.09,
+    "aum_chg_yi": 2423.13,
+    "new_count": 2394,
+    "new_scale_yi": 1004.87,
+    "inst": {
+      "inst_sec": {
+        "name": "证券公司及其资管子公司",
+        "count": 1775,
+        "scale_yi": 681.74,
+        "pct": 67.84
+      },
+      "inst_sec_pe": {
+        "name": "证券公司私募子公司",
+        "count": 26,
+        "scale_yi": 29.2,
+        "pct": 2.91
+      },
+      "inst_fund": {
+        "name": "基金管理公司",
+        "count": 343,
+        "scale_yi": 119.66,
+        "pct": 11.91
+      },
+      "inst_fund_sub": {
+        "name": "基金子公司",
+        "count": 141,
+        "scale_yi": 146.73,
+        "pct": 14.6
+      },
+      "inst_futures": {
+        "name": "期货公司及其资管子公司",
+        "count": 109,
+        "scale_yi": 27.54,
+        "pct": 2.74
+      }
+    },
+    "prod": {
+      "coll": {
+        "name": "集合资产管理计划",
+        "count": 24659,
+        "count_pct": 48.8,
+        "scale_yi": 70653.1,
+        "scale_pct": 53.97
+      },
+      "single": {
+        "name": "单一资产管理计划",
+        "count": 25871,
+        "count_pct": 51.2,
+        "scale_yi": 60263.35,
+        "scale_pct": 46.03
+      }
+    },
+    "invtype": {
+      "equity": {
+        "name": "权益类",
+        "count": 5188,
+        "count_pct": 10.27,
+        "scale_yi": 18862.32,
+        "scale_pct": 14.41
+      },
+      "fixed": {
+        "name": "固定收益类",
+        "count": 19704,
+        "count_pct": 38.99,
+        "scale_yi": 89245.38,
+        "scale_pct": 68.17
+      },
+      "futures": {
+        "name": "期货和衍生品类",
+        "count": 2045,
+        "count_pct": 4.05,
+        "scale_yi": 2005.88,
+        "scale_pct": 1.53
+      },
+      "mixed": {
+        "name": "混合类",
+        "count": 23593,
+        "count_pct": 46.69,
+        "scale_yi": 20802.88,
+        "scale_pct": 15.89
+      }
+    },
+    "stock_count": 50530,
+    "stock_scale_yi": 130916.46
+  }
+};
+const SMZG_FONT_SANS = "'Inter','Noto Sans SC','PingFang SC','Microsoft YaHei',sans-serif";
+const SMZG_FONT_MONO = "'JetBrains Mono','Inter',monospace";
+
+const smzg_periods = Object.keys(SMZG_DATA).sort();
+let smzg_curPeriod = smzg_periods[smzg_periods.length-1];
+
+function smzg_fmtInt(n){ return n==null?'—':n.toLocaleString('en-US'); }
+function smzg_fmtT(n){ return n==null?'—':n.toFixed(2); }
+function smzg_fmtY(n){ return n==null?'—':n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function smzg_periodZh(p){ const [y,m]=p.split('-'); return `${y}年${parseInt(m)}月`; }
+
+// ---- 报告期下拉 ----
+function smzg_initPeriodSelect(){
+  const sel=document.getElementById('smzg_periodSelect');
+  sel.innerHTML='';
+  smzg_periods.slice().reverse().forEach(p=>{
+    const o=document.createElement('option');
+    o.value=p; o.textContent=smzg_periodZh(p);
+    sel.appendChild(o);
+  });
+  sel.value=smzg_curPeriod;
+  sel.addEventListener('change',()=>{ smzg_curPeriod=sel.value; smzg_renderAll(); });
+}
+
+// ---- KPI ----
+function smzg_renderKpi(){
+  const d=SMZG_DATA[smzg_curPeriod];
+  const idx=smzg_periods.indexOf(smzg_curPeriod);
+  const prev = idx>0 ? SMZG_DATA[smzg_periods[idx-1]] : null;
+  function chg(cur,pv,unit='',digits=0){
+    if(pv==null||cur==null) return '<div class="kpi-change flat">—</div>';
+    const diff=cur-pv;
+    const cls = diff>0?'up':(diff<0?'down':'flat');
+    const sign = diff>0?'+':'';
+    const val = digits>0? diff.toFixed(digits): Math.round(diff).toLocaleString('en-US');
+    return `<div class="kpi-change ${cls}">环比 ${sign}${val}${unit}</div>`;
+  }
+  const cards=[
+    {cls:'',  label:'私募资管存续规模', val:smzg_fmtT(d.aum_trillion), unit:'万亿元', ch:chg(d.aum_trillion,prev&&prev.aum_trillion,'万亿',2)},
+    {cls:'c2',label:'存续产品数量', val:smzg_fmtInt(d.stock_count), unit:'只', ch:chg(d.stock_count,prev&&prev.stock_count,'只')},
+    {cls:'c3',label:'当月新备案数量', val:smzg_fmtInt(d.new_count), unit:'只', ch:chg(d.new_count,prev&&prev.new_count,'只')},
+    {cls:'c4',label:'当月新备案规模', val:smzg_fmtY(d.new_scale_yi), unit:'亿元', ch:chg(d.new_scale_yi,prev&&prev.new_scale_yi,'亿',2)},
+  ];
+  document.getElementById('smzg_kpiRow').innerHTML = cards.map(c=>`
+    <div class="kpi-card ${c.cls}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.val}<span class="kpi-unit">${c.unit}</span></div>
+      ${c.ch}
+    </div>`).join('');
+}
+
+// ---- 存续规模走势 ----
+function smzg_renderAum(){
+  const chart=echarts.init(document.getElementById('smzg_chartAum'),'dark',{backgroundColor:'transparent'});
+  const x=smzg_periods.map(smzg_periodZh);
+  const y=smzg_periods.map(p=>SMZG_DATA[p].aum_trillion);
+  chart.setOption({
+    grid:{left:50,right:24,top:30,bottom:40},
+    tooltip:{trigger:'axis',valueFormatter:v=>v+' 万亿元'},
+    xAxis:{type:'category',data:x,axisLabel:{color:'#a8b8cc',fontSize:11,rotate:30}},
+    yAxis:{type:'value',name:'万亿元',min:v=>Math.floor(v.min*0.98*10)/10,nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+    series:[{type:'line',data:y,smooth:true,symbol:'circle',symbolSize:7,
+      lineStyle:{width:3,color:'#4a90f4'},itemStyle:{color:'#4a90f4'},
+      areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(74,144,244,0.35)'},{offset:1,color:'rgba(74,144,244,0.02)'}])},
+      label:{show:true,position:'top',color:'#eef3f8',fontSize:11,fontFamily:SMZG_FONT_MONO,formatter:'{c}'}
+    }]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 月度备案走势 ----
+function smzg_renderNew(){
+  const chart=echarts.init(document.getElementById('smzg_chartNew'),'dark',{backgroundColor:'transparent'});
+  const x=smzg_periods.map(smzg_periodZh);
+  const cnt=smzg_periods.map(p=>SMZG_DATA[p].new_count);
+  const scale=smzg_periods.map(p=>SMZG_DATA[p].new_scale_yi);
+  chart.setOption({
+    grid:{left:60,right:60,top:40,bottom:40},
+    tooltip:{trigger:'axis'},
+    legend:{data:['备案数量','设立规模'],textStyle:{color:'#a8b8cc',fontSize:12},top:6},
+    xAxis:{type:'category',data:x,axisLabel:{color:'#a8b8cc',fontSize:11,rotate:30}},
+    yAxis:[
+      {type:'value',name:'数量(只)',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+      {type:'value',name:'规模(亿元)',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{show:false}}
+    ],
+    series:[
+      {name:'备案数量',type:'bar',yAxisIndex:0,data:cnt,itemStyle:{color:'rgba(74,144,244,0.55)'},barWidth:'45%'},
+      {name:'设立规模',type:'line',yAxisIndex:1,data:scale,smooth:true,symbol:'circle',symbolSize:6,lineStyle:{width:3,color:'#f5a623'},itemStyle:{color:'#f5a623'}}
+    ]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 存续投资类型堆叠 ----
+function smzg_renderInvStack(){
+  const chart=echarts.init(document.getElementById('smzg_chartInvStack'),'dark',{backgroundColor:'transparent'});
+  const x=smzg_periods.map(smzg_periodZh);
+  const keys=[['equity','权益类','#f0544c'],['fixed','固定收益类','#4a90f4'],['futures','期货和衍生品类','#22d3ee'],['mixed','混合类','#a78bfa']];
+  const series=keys.map(([k,name,color])=>({
+    name, type:'bar', stack:'t', itemStyle:{color},
+    data:smzg_periods.map(p=>SMZG_DATA[p].invtype[k].scale_yi)
+  }));
+  chart.setOption({
+    grid:{left:60,right:24,top:40,bottom:40},
+    tooltip:{trigger:'axis',valueFormatter:v=>(v==null?'—':v.toLocaleString('en-US'))+' 亿元'},
+    legend:{data:keys.map(k=>k[1]),textStyle:{color:'#a8b8cc',fontSize:12},top:6},
+    xAxis:{type:'category',data:x,axisLabel:{color:'#a8b8cc',fontSize:11,rotate:30}},
+    yAxis:{type:'value',name:'亿元',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+    series
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 存续投资类型饼图 ----
+function smzg_renderInvPie(){
+  const chart=echarts.init(document.getElementById('smzg_chartInvPie'),'dark',{backgroundColor:'transparent'});
+  const d=SMZG_DATA[smzg_curPeriod];
+  document.getElementById('smzg_invPieLabel').textContent=smzg_periodZh(smzg_curPeriod);
+  const data=[
+    {name:'权益类',value:d.invtype.equity.scale_yi,itemStyle:{color:'#f0544c'}},
+    {name:'固定收益类',value:d.invtype.fixed.scale_yi,itemStyle:{color:'#4a90f4'}},
+    {name:'期货和衍生品类',value:d.invtype.futures.scale_yi,itemStyle:{color:'#22d3ee'}},
+    {name:'混合类',value:d.invtype.mixed.scale_yi,itemStyle:{color:'#a78bfa'}}
+  ];
+  chart.setOption({
+    tooltip:{trigger:'item',valueFormatter:v=>v.toLocaleString('en-US')+' 亿元'},
+    legend:{bottom:8,textStyle:{color:'#a8b8cc',fontSize:12}},
+    series:[{type:'pie',radius:['42%','66%'],center:['50%','44%'],data,
+      label:{color:'#eef3f8',fontFamily:SMZG_FONT_SANS,fontSize:12,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:'#a8b8cc'}}}]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 存续产品类型饼图 ----
+function smzg_renderProdPie(){
+  const chart=echarts.init(document.getElementById('smzg_chartProdPie'),'dark',{backgroundColor:'transparent'});
+  const d=SMZG_DATA[smzg_curPeriod];
+  document.getElementById('smzg_prodPieLabel').textContent=smzg_periodZh(smzg_curPeriod);
+  const data=[
+    {name:'集合资产管理计划',value:d.prod.coll.scale_yi,itemStyle:{color:'#2dd284'}},
+    {name:'单一资产管理计划',value:d.prod.single.scale_yi,itemStyle:{color:'#f5a623'}}
+  ];
+  chart.setOption({
+    tooltip:{trigger:'item',valueFormatter:v=>v.toLocaleString('en-US')+' 亿元'},
+    legend:{bottom:8,textStyle:{color:'#a8b8cc',fontSize:12}},
+    series:[{type:'pie',radius:['42%','66%'],center:['50%','44%'],data,
+      label:{color:'#eef3f8',fontFamily:SMZG_FONT_SANS,fontSize:12,formatter:'{b}\n{d}%'},
+      labelLine:{lineStyle:{color:'#a8b8cc'}}}]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 月度备案按机构类型 ----
+function smzg_renderInst(){
+  const chart=echarts.init(document.getElementById('smzg_chartInst'),'dark',{backgroundColor:'transparent'});
+  const d=SMZG_DATA[smzg_curPeriod];
+  document.getElementById('smzg_instLabel').textContent=smzg_periodZh(smzg_curPeriod);
+  const order=['inst_sec','inst_sec_pe','inst_fund','inst_fund_sub','inst_futures'];
+  const names=order.map(k=>d.inst[k].name);
+  const scales=order.map(k=>d.inst[k].scale_yi);
+  const counts=order.map(k=>d.inst[k].count);
+  chart.setOption({
+    grid:{left:60,right:60,top:40,bottom:60},
+    tooltip:{trigger:'axis',axisPointer:{type:'shadow'}},
+    legend:{data:['设立规模','备案数量'],textStyle:{color:'#a8b8cc',fontSize:12},top:6},
+    xAxis:{type:'category',data:names,axisLabel:{color:'#a8b8cc',fontSize:11,interval:0,formatter:v=>v.replace(/(.{6})/g,'$1\n')}},
+    yAxis:[
+      {type:'value',name:'规模(亿元)',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{lineStyle:{color:'#1c2a3d'}}},
+      {type:'value',name:'数量(只)',nameTextStyle:{color:'#7b8da3'},axisLabel:{color:'#a8b8cc'},splitLine:{show:false}}
+    ],
+    series:[
+      {name:'设立规模',type:'bar',yAxisIndex:0,data:scales,barWidth:'42%',
+        itemStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'#4a90f4'},{offset:1,color:'#a78bfa'}]),borderRadius:[4,4,0,0]},
+        label:{show:true,position:'top',color:'#eef3f8',fontSize:11,fontFamily:SMZG_FONT_MONO,formatter:p=>p.value.toLocaleString('en-US')}},
+      {name:'备案数量',type:'line',yAxisIndex:1,data:counts,smooth:true,symbol:'circle',symbolSize:7,lineStyle:{width:3,color:'#f5a623'},itemStyle:{color:'#f5a623'},
+        label:{show:true,position:'bottom',color:'#f5a623',fontSize:11,fontFamily:SMZG_FONT_MONO,formatter:'{c}'}}
+    ]
+  });
+  window.addEventListener('resize',()=>chart.resize());
+}
+
+// ---- 存续结构明细表 ----
+function smzg_renderDetailTable(){
+  const d=SMZG_DATA[smzg_curPeriod];
+  document.getElementById('smzg_tableLabel').textContent=smzg_periodZh(smzg_curPeriod);
+  const inv=[['权益类','equity'],['固定收益类','fixed'],['期货和衍生品类','futures'],['混合类','mixed']];
+  const prod=[['集合资产管理计划','coll'],['单一资产管理计划','single']];
+  let html='<table><thead><tr><th>分类维度</th><th>类别</th><th>数量（只）</th><th>数量占比</th><th>规模（亿元）</th><th>规模占比</th></tr></thead><tbody>';
+  inv.forEach((it,i)=>{
+    const v=d.invtype[it[1]];
+    html+=`<tr><td>${i===0?'按投资类型':''}</td><td>${it[0]}</td>
+      <td>${smzg_fmtInt(v.count)}</td><td>${v.count_pct!=null?v.count_pct.toFixed(2)+'%':'—'}</td>
+      <td>${smzg_fmtY(v.scale_yi)}</td><td>${v.scale_pct!=null?v.scale_pct.toFixed(2)+'%':'—'}</td></tr>`;
+  });
+  prod.forEach((it,i)=>{
+    const v=d.prod[it[1]];
+    html+=`<tr><td>${i===0?'按产品类型':''}</td><td>${it[0]}</td>
+      <td>${smzg_fmtInt(v.count)}</td><td>${v.count_pct!=null?v.count_pct.toFixed(2)+'%':'—'}</td>
+      <td>${smzg_fmtY(v.scale_yi)}</td><td>${v.scale_pct!=null?v.scale_pct.toFixed(2)+'%':'—'}</td></tr>`;
+  });
+  html+=`<tr style="font-weight:700"><td>合计</td><td>存续产品</td><td>${smzg_fmtInt(d.stock_count)}</td><td>100.00%</td><td>${smzg_fmtY(d.stock_scale_yi)}</td><td>100.00%</td></tr>`;
+  html+='</tbody></table>';
+  document.getElementById('smzg_detailTable').innerHTML=html;
+}
+
+function smzg_renderAll(){
+  document.getElementById('smzg_periodMeta').textContent='数据截至 '+smzg_periodZh(smzg_curPeriod)+'末';
+  document.getElementById('smzg_footerPeriod').textContent=smzg_periodZh(smzg_curPeriod);
+  smzg_renderKpi();
+  smzg_renderAum();
+  smzg_renderNew();
+  smzg_renderInvStack();
+  smzg_renderInvPie();
+  smzg_renderProdPie();
+  smzg_renderInst();
+  smzg_renderDetailTable();
+}
+
+// 私幕资管模板自带的 DOMContentLoaded 监听已改造：
+//  - initPeriodSelect 必须在 DOMContentLoaded 跑（填充 nav 上的 select）
+//  - renderAll 不在 DOMContentLoaded 跑（tabSmzg 初始 display:none，echarts 拿不到尺寸）
+if (true) {
+  document.addEventListener('DOMContentLoaded',()=>{
+    smzg_initPeriodSelect();
+  });
+}
+
+(function(){
+  // 懒初始化：tabSmzg 初始 display:none，echarts 无法获取尺寸，切换到该 tab 时才初始化
+  // 注：smzg_initPeriodSelect 已在 DOMContentLoaded 跑过（填充 nav 上的 select）
+  var _smzgInited = false;
+  window._smzgLazyInit = function() {
+    if (_smzgInited) return;
+    _smzgInited = true;
+    smzg_renderAll();
+  };
+})();
+
 </script>
 </body>
 </html>
